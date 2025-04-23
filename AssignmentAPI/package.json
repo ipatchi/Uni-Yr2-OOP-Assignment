@@ -1,0 +1,26 @@
+{
+  "name": "AssignmentAPI",
+  "version": "0.0.1",
+  "description": "Awesome project developed with TypeORM.",
+  "type": "commonjs",
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "class-validator": "^0.14.1",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "http-status-codes": "^2.3.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "mysql2": "^3.14.0",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "0.3.22"
+  },
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
+    "typeorm": "typeorm-ts-node-commonjs"
+  }
+}
