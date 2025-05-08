@@ -1,6 +1,8 @@
 import { RoleController } from './controllers/RoleController';
 import { AppDataSource } from './data-source';
 import { RoleRouter } from './routes/RoleRouter';
+import { UserRouter } from './routes/UserRouter';
+import { UserController } from './controllers/UserController';
 import { Server } from './server';
 import { Router } from 'express';
 
@@ -16,6 +18,8 @@ if (!process.env.SERVER_PORT) {
 const appDataSource = AppDataSource;
 
 const roleRouter = new RoleRouter(Router(), new RoleController());
+const userRouter = new UserRouter(Router(), new UserController());
 
-const server = new Server(port, roleRouter, appDataSource);
+const server = new Server(port, roleRouter, userRouter, appDataSource);
+
 server.start();

@@ -2,6 +2,10 @@ import express, { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { DataSource } from 'typeorm';
 import { RoleRouter } from './routes/RoleRouter';
+import { ResponseHandler } from './helpers/ResponseHandler';
+import { Logger } from './helpers/Logger';
+import { UserRouter } from './routes/UserRouter';
+import morgan, { StreamOptions } from 'morgan';
 
 export class Server {
   private readonly app: express.Application;
@@ -9,47 +13,60 @@ export class Server {
   constructor(
     private readonly port: string | number,
     private readonly roleRouter: RoleRouter,
+    private readonly userRouter: UserRouter,
     private readonly appDataSource: DataSource
   ) {
     this.app = express();
 
     this.initaliseMiddlewares();
+
     this.initaliseRoutes();
+
     this.initaliseErrorHandling();
   }
 
   private initaliseMiddlewares() {
+    const morganStream: StreamOptions = {
+      write: (message: string): void => {
+        Logger.info(message.trim());
+      },
+    };
+
     this.app.use(express.json());
+    this.app.use(morgan('combined', { stream: morganStream }));
   }
 
   private initaliseRoutes() {
     this.app.use('/api/roles', this.roleRouter.getRouter());
+    this.app.use('/api/users', this.userRouter.getRouter());
   }
 
   private initaliseErrorHandling() {
-    this.app.get('*', (req: Request, res: Response) => {
+    this.app.get('*splat', (req: Request, res: Response) => {
       const requestedURL = `${req.protocol}://${req.get('host')}${
         req.originalUrl
       }`;
-      res
-        .status(StatusCodes.NOT_FOUND)
-        .send('Route ' + requestedURL + ' not found.');
+      ResponseHandler.sendErrorResponse(
+        res,
+        StatusCodes.NOT_FOUND,
+        'Route ' + requestedURL + ' not found.'
+      );
     });
   }
 
   public async start() {
     await this.initialiseDataSource();
     this.app.listen(this.port, () => {
-      console.log(`Server running on http://localhost:${this.port}`);
+      Logger.info(`Server running on http://localhost:${this.port}`);
     });
   }
 
   private async initialiseDataSource() {
     try {
       await this.appDataSource.initialize();
-      console.log('Data source initalised');
+      Logger.info(`Data Source Initialised`);
     } catch (error) {
-      console.log('Error during initialisation:', error);
+      Logger.info('Error during initialisation:', error);
       throw error;
     }
   }
