@@ -7,7 +7,21 @@ import { ResponseHandler } from '../helpers/ResponseHandler';
 import { validate } from 'class-validator';
 
 export class RoleController {
+  public static readonly ERROR_NO_ID_PROVIDED = 'No ID provided';
+  public static readonly ERROR_INVALID_ID_FORMAT = 'Invalid ID format';
+  public static readonly ERROR_ROLE_NOT_FOUND = 'Role not found';
+  public static readonly ERROR_ROLE_NOT_FOUND_WITH_ID = (id: number) =>
+    `Role not found with ID ${id}`;
+  public static readonly ERROR_NAME_IS_BLANK = 'Name is required';
+  public static readonly ERROR_FAILED_TO_RETRIEVE_ROLES =
+    'Failed to retrieve roles';
+  public static readonly ERROR_FAILED_TO_RETRIEVE_ROLE =
+    'Failed to retrieve role';
+  public static readonly ERROR_ROLE_NOT_FOUND_FOR_DELETION =
+    'Role with provided ID not found';
+
   private roleRepository: Repository<Role>;
+
   constructor() {
     this.roleRepository = AppDataSource.getRepository(Role);
   }
@@ -19,28 +33,29 @@ export class RoleController {
         ResponseHandler.sendErrorResponse(res, StatusCodes.NO_CONTENT);
         return;
       }
-      res.send(roles);
+      ResponseHandler.sendSuccessResponse(res, roles);
     } catch (error) {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.INTERNAL_SERVER_ERROR,
-        'Failed to retrieve roles'
+        RoleController.ERROR_FAILED_TO_RETRIEVE_ROLES
       );
     }
   };
 
   // Get Role by ID
   public getById = async (req: Request, res: Response): Promise<void> => {
-    const roleID = parseInt(req.params.id);
+    const roleID = parseInt(req.params.roleID);
     if (isNaN(roleID)) {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        'Invalid ID format'
+        RoleController.ERROR_INVALID_ID_FORMAT
       );
       return;
     }
     try {
+      console.log('Hello');
       const role = await this.roleRepository.findOne({
         where: { roleID: roleID },
       });
@@ -48,7 +63,7 @@ export class RoleController {
         ResponseHandler.sendErrorResponse(
           res,
           StatusCodes.NOT_FOUND,
-          `Role not found with ID: ${roleID}`
+          RoleController.ERROR_ROLE_NOT_FOUND_WITH_ID(roleID)
         );
         return;
       }
@@ -57,24 +72,32 @@ export class RoleController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.INTERNAL_SERVER_ERROR,
-        'Failed to retrieve role'
+        RoleController.ERROR_FAILED_TO_RETRIEVE_ROLE
       );
     }
   };
 
-  public create = async (req: Request, res: Response) => {
+  public create = async (req: Request, res: Response): Promise<void> => {
     try {
       let role = new Role();
       role.name = req.body.name;
 
+      console.log(role);
+
       const errors = await validate(role);
+      console.log(errors);
+
       if (errors.length > 0) {
-        throw new Error('Name is blank');
+        throw new Error(
+          errors.map((err) => Object.values(err.constraints || {})).join(', ')
+        );
       }
+      console.log('Bonjour');
 
       role = await this.roleRepository.save(role);
       ResponseHandler.sendSuccessResponse(res, role, StatusCodes.CREATED);
     } catch (error: any) {
+      console.log('Not hello');
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
@@ -84,15 +107,15 @@ export class RoleController {
   };
 
   public delete = async (req: Request, res: Response) => {
-    const roleID = req.params.id;
+    const roleID = req.params.roleID;
 
     try {
       if (!roleID) {
-        throw new Error('No ID Provided!');
+        throw new Error(RoleController.ERROR_NO_ID_PROVIDED);
       }
       const result = await this.roleRepository.delete(roleID);
       if (result.affected === 0) {
-        throw new Error('Role with provided ID could not be found');
+        throw new Error(RoleController.ERROR_ROLE_NOT_FOUND_WITH_ID(roleID));
       }
 
       ResponseHandler.sendSuccessResponse(res, 'Role Deleted');
@@ -106,23 +129,23 @@ export class RoleController {
   };
 
   public update = async (req: Request, res: Response): Promise<void> => {
-    const roleID = req.body.id;
+    const roleID = req.body.roleID;
 
     try {
       let role = await this.roleRepository.findOneBy({ roleID });
 
       if (!role) {
-        throw new Error('Role not found');
+        throw new Error(RoleController.ERROR_ROLE_NOT_FOUND);
       }
 
       role.name = req.body.name;
       const errors = await validate(role);
       if (errors.length > 0) {
-        throw new Error('Name is blank!');
+        throw new Error(RoleController.ERROR_NAME_IS_BLANK);
       }
 
       role = await this.roleRepository.save(role);
-      ResponseHandler.sendSuccessResponse(res, role);
+      ResponseHandler.sendSuccessResponse(res, role, StatusCodes.OK);
     } catch (error: any) {
       ResponseHandler.sendErrorResponse(
         res,

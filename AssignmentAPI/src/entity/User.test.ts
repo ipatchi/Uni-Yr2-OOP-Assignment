@@ -20,21 +20,27 @@ describe('User entity', () => {
     user = new User();
     user.userID = 1;
     user.email = 'test@email.com';
+    user.firstname = 'Bob';
+    user.surname = 'Smith';
     user.password = 'x'.repeat(10);
-    user.role = role;
+    user.roleID = role;
   });
 
   it('A user with valid details will not return their password on submit', () => {
     jest.spyOn(ClassTransformer, 'instanceToPlain').mockReturnValue({
       userID: user.userID,
       email: user.email,
-      role: { roleID: user.role.roleID, name: user.role.name },
+      firstname: user.firstname,
+      surname: user.surname,
+      roleID: { roleID: user.roleID.roleID, name: user.roleID.name },
     } as any);
 
     const plainUser = instanceToPlain(user);
     expect(plainUser).toHaveProperty('userID', user.userID);
     expect(plainUser).toHaveProperty('email', user.email);
-    expect(plainUser).toHaveProperty('role', {
+    expect(plainUser).toHaveProperty('firstname', user.firstname);
+    expect(plainUser).toHaveProperty('surname', user.surname);
+    expect(plainUser).toHaveProperty('roleID', {
       roleID: role.roleID,
       name: role.name,
     });
@@ -47,7 +53,9 @@ describe('User entity', () => {
     mockUserRepository.findOne.mockResolvedValue({
       userID: user.userID,
       email: user.email,
-      role: { roleID: role.roleID, name: role.name },
+      firstname: user.firstname,
+      surname: user.surname,
+      roleID: { roleID: role.roleID, name: role.name },
     } as User);
 
     const retrievedUser = await mockUserRepository.findOne({
@@ -57,7 +65,9 @@ describe('User entity', () => {
     expect(retrievedUser).toBeDefined();
     expect(retrievedUser).toHaveProperty('userID', user.userID);
     expect(retrievedUser).toHaveProperty('email', user.email);
-    expect(retrievedUser).toHaveProperty('role', {
+    expect(retrievedUser).toHaveProperty('firstname', user.firstname);
+    expect(retrievedUser).toHaveProperty('surname', user.surname);
+    expect(retrievedUser).toHaveProperty('roleID', {
       roleID: role.roleID,
       name: role.name,
     });
@@ -82,8 +92,11 @@ describe('User entity', () => {
 
     const userWithDuplicateEmailAddress = new User();
     userWithDuplicateEmailAddress.email = user.email;
+    userWithDuplicateEmailAddress.firstname = user.firstname;
+    userWithDuplicateEmailAddress.surname = user.surname;
     userWithDuplicateEmailAddress.password = 'x'.repeat(10);
-    userWithDuplicateEmailAddress.role = role;
+
+    userWithDuplicateEmailAddress.roleID = role;
 
     await expect(
       mockUserRepository.save(userWithDuplicateEmailAddress)
@@ -109,7 +122,7 @@ describe('User entity', () => {
     invalidUser.password = 1234 as any;
     invalidUser.firstname = VALID_FIRSTNAME;
     invalidUser.surname = VALID_SURNAME;
-    invalidUser.role = role;
+    invalidUser.roleID = role;
 
     const errors = await validate(invalidUser);
 
@@ -123,7 +136,7 @@ describe('User entity', () => {
     invalidUser.firstname = VALID_FIRSTNAME;
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = 'x'.repeat(9);
-    invalidUser.role = role;
+    invalidUser.roleID = role;
 
     const errors = await validate(invalidUser);
 
@@ -137,7 +150,7 @@ describe('User entity', () => {
     invalidUser.firstname = VALID_FIRSTNAME;
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = VALID_PASSWORD;
-    invalidUser.role = role;
+    invalidUser.roleID = role;
 
     const errors = await validate(invalidUser);
 
@@ -151,7 +164,7 @@ describe('User entity', () => {
     invalidUser.firstname = VALID_FIRSTNAME;
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = VALID_PASSWORD;
-    invalidUser.role = null;
+    invalidUser.roleID = null;
 
     const errors = await validate(invalidUser);
 
@@ -165,7 +178,7 @@ describe('User entity', () => {
     invalidUser.firstname = VALID_FIRSTNAME;
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = VALID_PASSWORD;
-    invalidUser.role = role;
+    invalidUser.roleID = role;
 
     const errors = await validate(invalidUser);
 
