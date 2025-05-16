@@ -2,7 +2,9 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { Role } from './entity/Role';
 import { User } from './entity/User';
+import { Manager } from './entity/Manager';
 import * as dotenv from 'dotenv';
+import { LeaveRequest } from './entity/LeaveRequest';
 
 dotenv.config({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 
@@ -15,5 +17,5 @@ export const AppDataSource = new DataSource({
   database: process.env.DB_DATABASE,
   synchronize: false,
   logging: false,
-  entities: [Role, User],
+  entities: [Role, User, Manager, LeaveRequest],
 });

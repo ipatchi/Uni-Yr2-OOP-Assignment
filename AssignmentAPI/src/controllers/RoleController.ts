@@ -55,7 +55,6 @@ export class RoleController {
       return;
     }
     try {
-      console.log('Hello');
       const role = await this.roleRepository.findOne({
         where: { roleID: roleID },
       });
@@ -107,7 +106,7 @@ export class RoleController {
   };
 
   public delete = async (req: Request, res: Response) => {
-    const roleID = req.params.roleID;
+    const roleID = parseInt(req.params.roleID);
 
     try {
       if (!roleID) {

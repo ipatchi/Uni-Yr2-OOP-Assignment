@@ -1,9 +1,13 @@
 import { Router } from 'express';
-import { RoleController } from '../controllers/RoleController';
+import { ManagerController } from '../controllers/ManagerController';
 import { authoriseRole } from '../helpers/AuthoriseRole';
 import { RoleName } from '../types/RoleName';
-export class RoleRouter {
-  constructor(private router: Router, private roleController: RoleController) {
+
+export class ManagerRouter {
+  constructor(
+    private router: Router,
+    private managerController: ManagerController
+  ) {
     this.addRoutes();
   }
   public getRouter(): Router {
@@ -13,27 +17,28 @@ export class RoleRouter {
     this.router.get(
       '/',
       authoriseRole(RoleName.ADMIN),
-      this.roleController.getAll
+      this.managerController.getAll
     );
+
     this.router.get(
-      '/:roleID',
+      '/:userID',
       authoriseRole(RoleName.ADMIN),
-      this.roleController.getById
+      this.managerController.getByUserID
     );
     this.router.post(
       '/',
       authoriseRole(RoleName.ADMIN),
-      this.roleController.create
+      this.managerController.create
     );
     this.router.delete(
-      '/:roleID',
+      '/:id',
       authoriseRole(RoleName.ADMIN),
-      this.roleController.delete
+      this.managerController.delete
     );
     this.router.patch(
       '/',
       authoriseRole(RoleName.ADMIN),
-      this.roleController.update
+      this.managerController.updateManager
     );
   }
 }

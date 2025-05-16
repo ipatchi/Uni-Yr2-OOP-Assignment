@@ -8,6 +8,7 @@ import { ResponseHandler } from '../helpers/ResponseHandler';
 import { StatusCodes } from 'http-status-codes';
 import { UserDTOToken } from '../entity/UserDTOToken';
 import jwt from 'jsonwebtoken';
+import { RoleName } from '../types/RoleName';
 
 export class LoginController {
   public static readonly ERROR_NO_EMAIL_PROVIDED = 'No email provided';
@@ -48,7 +49,7 @@ export class LoginController {
         throw new Error(LoginController.ERROR_PASSWORD_INCORRECT);
       }
 
-      let token = new UserDTOToken(user.email, user.roleID);
+      let token = new UserDTOToken(user.email, user.roleID.name as RoleName);
       res
         .status(StatusCodes.ACCEPTED)
         .send(jwt.sign({ token }, process.env.JWT_SECRET, { expiresIn: '3h' }));

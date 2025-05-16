@@ -7,11 +7,11 @@ import { toNamespacedPath } from 'path';
 
 const mockRoleController = {
   delete: jest.fn((req, res) =>
-    res.status(StatusCodes.OK).json({ id: req.params.id })
+    res.status(StatusCodes.OK).json({ roleID: req.params.roleID })
   ),
   getAll: jest.fn((req, res) => res.status(StatusCodes.OK).json([])),
   getById: jest.fn((req, res) =>
-    res.status(StatusCodes.OK).json({ id: req.params.id })
+    res.status(StatusCodes.OK).json({ roleID: req.params.roleID })
   ),
   create: jest.fn((req, res) => res.status(StatusCodes.CREATED).json(req.body)),
   update: jest.fn((req, res) => res.status(StatusCodes.OK).json(req.body)),
@@ -42,7 +42,7 @@ describe('RoleRouter tests', () => {
     expect(response.body).toEqual([]);
   });
 
-  it('getByID route GET /roles/:id can be called', async () => {
+  it('getByID route GET /roles/:roleID can be called', async () => {
     const endPoint = `${BASE_ROLES_URL}/1`;
     const response = await request(app).get(endPoint).expect(StatusCodes.OK);
 
@@ -51,7 +51,7 @@ describe('RoleRouter tests', () => {
     expect(requestedURL).toBeDefined();
     expect(requestedURL).toBe(endPoint);
     expect(response.status).toBe(StatusCodes.OK);
-    expect(response.body).toEqual({ id: '1' });
+    expect(response.body).toEqual({ roleID: '1' });
   });
 
   it('create route POST /roles can be called', async () => {
@@ -70,7 +70,7 @@ describe('RoleRouter tests', () => {
   });
 
   it('update route PATCH /roles can be called', async () => {
-    const updateRoleData = { id: 1, name: 'UpdatedRole' };
+    const updateRoleData = { roleID: 1, name: 'UpdatedRole' };
     const response = await request(app)
       .patch(BASE_ROLES_URL)
       .send(updateRoleData)
@@ -95,6 +95,6 @@ describe('RoleRouter tests', () => {
     expect(mockRoleController.delete).toHaveBeenCalled();
     expect(url).toBe(endpoint);
     expect(response.status).toBe(StatusCodes.OK);
-    expect(response.body).toEqual({ id: '1' });
+    expect(response.body).toEqual({ roleID: '1' });
   });
 });

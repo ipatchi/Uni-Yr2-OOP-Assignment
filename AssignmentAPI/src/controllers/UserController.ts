@@ -117,6 +117,7 @@ export class UserController {
       user.firstname = req.body.firstname;
       user.surname = req.body.surname;
       user.roleID = req.body.roleID;
+      user.annualLeaveBalance = req.body.annualLeaveBalance || 25;
 
       const errors = await validate(user);
       if (errors.length > 0) {

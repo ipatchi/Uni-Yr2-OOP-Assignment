@@ -6,8 +6,12 @@ import { UserRouter } from './routes/UserRouter';
 import { RoleRouter } from './routes/RoleRouter';
 import { ResponseHandler } from './helpers/ResponseHandler';
 import { Logger } from './helpers/Logger';
+import rateLimit from 'express-rate-limit';
 import morgan, { StreamOptions } from 'morgan';
 import jwt from 'jsonwebtoken';
+import { IAuthenticatedJWTRequest } from './types/IAuthenticatedJWTRequest';
+import { ManagerRouter } from './routes/ManagerRouter';
+import { LeaveRequestRouter } from './routes/LeaveRequestRouter';
 
 export class Server {
   private readonly app: express.Application;
@@ -17,21 +21,73 @@ export class Server {
   public static readonly ERROR_TOKEN_NOT_FOUND =
     'Not authorised - Token not found';
 
+  private readonly loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests - try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
   constructor(
     private readonly port: string | number,
     private readonly loginRouter: LoginRouter,
     private readonly roleRouter: RoleRouter,
     private readonly userRouter: UserRouter,
+    private readonly managerRouter: ManagerRouter,
+    private readonly leaveRequestRouter: LeaveRequestRouter,
     private readonly appDataSource: DataSource
   ) {
     this.app = express();
-
 
     this.initaliseMiddlewares();
 
     this.initaliseRoutes();
 
     this.initaliseErrorHandling();
+  }
+
+  private logRouteAccess(route: string) {
+    return (
+      req: express.Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) => {
+      Logger.info(`${route} accessed by ${req.ip}`);
+      next();
+    };
+  }
+
+  private readonly jwtRateLimiter = (userEmail: string) =>
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 20,
+      message: 'Too many requests - try again later',
+      standardHeaders: true,
+      legacyHeaders: false,
+      keyGenerator: (req) => userEmail,
+    });
+
+  private jwtRateLimitMiddleware(route: string) {
+    return (
+      req: IAuthenticatedJWTRequest,
+      res: express.Response,
+      next: express.NextFunction
+    ) => {
+      const email = req.signedInUser?.email;
+      if (email) {
+        Logger.info(`${route} accessed by ${req.ip}`);
+        this.jwtRateLimiter(email)(req, res, next);
+      } else {
+        const ERROR_MESSAGE = 'Missing essential information in JWT';
+        Logger.error(ERROR_MESSAGE);
+        ResponseHandler.sendErrorResponse(
+          res,
+          StatusCodes.BAD_REQUEST,
+          ERROR_MESSAGE
+        );
+      }
+    };
   }
 
   private initaliseMiddlewares() {
@@ -42,21 +98,44 @@ export class Server {
     };
 
     this.app.use(express.json());
-    this.app.use(require('helmet')())
+    this.app.use(require('helmet')());
     this.app.use(morgan('combined', { stream: morganStream }));
   }
 
   private initaliseRoutes() {
-    this.app.use('/api/login', this.loginRouter.getRouter());
+    this.app.use(
+      '/api/login',
+      this.loginLimiter,
+      this.logRouteAccess('Login route'),
+      this.loginRouter.getRouter()
+    );
     this.app.use(
       '/api/roles',
       this.authenticateToken,
+      this.logRouteAccess('Roles route'),
+      this.jwtRateLimitMiddleware('roles'),
       this.roleRouter.getRouter()
     );
     this.app.use(
       '/api/users',
       this.authenticateToken,
+      this.logRouteAccess('Users route'),
+      this.jwtRateLimitMiddleware('users'),
       this.userRouter.getRouter()
+    );
+    this.app.use(
+      '/api/managers',
+      this.authenticateToken,
+      this.logRouteAccess('Managers route'),
+      this.jwtRateLimitMiddleware('managers'),
+      this.managerRouter.getRouter()
+    );
+    this.app.use(
+      '/api/leave-requests',
+      this.authenticateToken,
+      this.logRouteAccess('Leave requests route'),
+      this.jwtRateLimitMiddleware('requests'),
+      this.leaveRequestRouter.getRouter()
     );
   }
 
@@ -82,8 +161,8 @@ export class Server {
 
   private async initialiseDataSource() {
     try {
-      await this.appDataSource.initialize();
       Logger.info(`Data Source Initialised`);
+      await this.appDataSource.initialize();
     } catch (error) {
       Logger.info('Error during initialisation:', error);
       throw error;
@@ -91,7 +170,7 @@ export class Server {
   }
 
   private authenticateToken = (
-    req: Request,
+    req: IAuthenticatedJWTRequest,
     res: Response,
     next: NextFunction
   ) => {
@@ -112,7 +191,17 @@ export class Server {
             Server.ERROR_TOKEN_IS_INVALID
           );
         }
-        (req as any).signedInUser = payload;
+        const {
+          token: { email, role },
+        } = payload as any;
+        if (!email || !role) {
+          return ResponseHandler.sendErrorResponse(
+            res,
+            StatusCodes.UNAUTHORIZED,
+            Server.ERROR_TOKEN_IS_INVALID
+          );
+        }
+        req.signedInUser = { email, role };
         next();
       });
     } else {

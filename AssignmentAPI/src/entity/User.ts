@@ -1,6 +1,7 @@
 import {
   IsEmail,
   IsNotEmpty,
+  IsNumber,
   IsString,
   MaxLength,
   MinLength,
@@ -53,6 +54,10 @@ export class User {
   @IsNotEmpty({ message: 'Role is required' })
   @JoinColumn({ name: 'roleID' })
   roleID: Role;
+
+  @Column()
+  @IsNumber()
+  annualLeaveBalance: number;
 
   @BeforeInsert()
   hashPassword() {
