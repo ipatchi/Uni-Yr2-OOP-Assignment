@@ -5,6 +5,7 @@ import { instanceToPlain } from 'class-transformer';
 import { validate } from 'class-validator';
 import { QueryFailedError, Repository } from 'typeorm';
 import { mock } from 'jest-mock-extended';
+import { RoleName } from '../types/RoleName';
 
 describe('User entity', () => {
   let mockUserRepository: jest.Mocked<Repository<User>>;
@@ -15,7 +16,7 @@ describe('User entity', () => {
     mockUserRepository = mock<Repository<User>>();
     role = new Role();
     role.roleID = 1;
-    role.name = 'Admin';
+    role.name = RoleName.ADMIN;
 
     user = new User();
     user.userID = 1;
@@ -109,11 +110,12 @@ describe('User entity', () => {
   const VALID_EMAIL = 'test@email.com';
   const VALID_FIRSTNAME = 'Bob';
   const VALID_SURNAME = 'Smith';
+  const VALID_ANNUAL_LEAVE = 25;
 
   beforeAll(() => {
     role = new Role();
     role.roleID = 1;
-    role.name = 'Admin';
+    role.name = RoleName.ADMIN;
   });
 
   it('A password must be a string', async () => {
@@ -123,6 +125,7 @@ describe('User entity', () => {
     invalidUser.firstname = VALID_FIRSTNAME;
     invalidUser.surname = VALID_SURNAME;
     invalidUser.roleID = role;
+    invalidUser.annualLeaveBalance = VALID_ANNUAL_LEAVE;
 
     const errors = await validate(invalidUser);
 
@@ -137,6 +140,7 @@ describe('User entity', () => {
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = 'x'.repeat(9);
     invalidUser.roleID = role;
+    invalidUser.annualLeaveBalance = VALID_ANNUAL_LEAVE;
 
     const errors = await validate(invalidUser);
 
@@ -151,6 +155,7 @@ describe('User entity', () => {
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = VALID_PASSWORD;
     invalidUser.roleID = role;
+    invalidUser.annualLeaveBalance = VALID_ANNUAL_LEAVE;
 
     const errors = await validate(invalidUser);
 
@@ -164,6 +169,7 @@ describe('User entity', () => {
     invalidUser.firstname = VALID_FIRSTNAME;
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = VALID_PASSWORD;
+    invalidUser.annualLeaveBalance = VALID_ANNUAL_LEAVE;
     invalidUser.roleID = null;
 
     const errors = await validate(invalidUser);
@@ -179,6 +185,7 @@ describe('User entity', () => {
     invalidUser.surname = VALID_SURNAME;
     invalidUser.password = VALID_PASSWORD;
     invalidUser.roleID = role;
+    invalidUser.annualLeaveBalance = VALID_ANNUAL_LEAVE;
 
     const errors = await validate(invalidUser);
 

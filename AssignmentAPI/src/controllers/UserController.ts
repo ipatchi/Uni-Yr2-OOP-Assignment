@@ -10,6 +10,15 @@ import { instanceToPlain } from 'class-transformer';
 export class UserController {
   private userRepository: Repository<User>;
 
+  public static readonly ERROR_USER_WITH_ERROR_ID_NOT_FOUND = (id: number) =>
+    `User with ID ${id} not found.`;
+  public static readonly ERROR_EMAIL_IS_REQUIRED = `Email is required.`;
+  public static readonly ERROR_EMAIL_NOT_FOUND = (email: string) =>
+    `Email ${email} is not found.`;
+  public static readonly ERROR_INVALID_ID_FORMAT = `Invalid ID format`;
+  public static readonly ERROR_ID_NOT_FOUND = `ID not provided.`;
+  public static readonly ERROR_FAILED_TO_RETRIEVE_USERS = `Failed to retrieve users`;
+
   constructor() {
     this.userRepository = AppDataSource.getRepository(User);
   }
@@ -30,7 +39,7 @@ export class UserController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.INTERNAL_SERVER_ERROR,
-        `Failed to retrieve users: ${error.message}`
+        UserController.ERROR_FAILED_TO_RETRIEVE_USERS
       );
     }
   };
@@ -42,7 +51,7 @@ export class UserController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        'Email is required'
+        UserController.ERROR_EMAIL_IS_REQUIRED
       );
       return;
     }
@@ -57,7 +66,7 @@ export class UserController {
         ResponseHandler.sendErrorResponse(
           res,
           StatusCodes.BAD_REQUEST,
-          `${email} not found`
+          UserController.ERROR_EMAIL_NOT_FOUND(email)
         );
         return;
       }
@@ -67,7 +76,7 @@ export class UserController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        `Unable to find user with the email: ${email}`
+        UserController.ERROR_EMAIL_NOT_FOUND(email)
       );
     }
   };
@@ -79,7 +88,7 @@ export class UserController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        'Invalid ID format'
+        UserController.ERROR_INVALID_ID_FORMAT
       );
       return;
     }
@@ -94,7 +103,7 @@ export class UserController {
         ResponseHandler.sendErrorResponse(
           res,
           StatusCodes.BAD_REQUEST,
-          `$User with ID: ${userID} not found`
+          UserController.ERROR_ID_NOT_FOUND
         );
         return;
       }
@@ -142,22 +151,25 @@ export class UserController {
   };
 
   public delete = async (req: Request, res: Response): Promise<void> => {
+    console.log('Reached delete');
     const userID = parseInt(req.params.id);
-
+    console.log(`Deleting userID: ${userID}`);
     try {
       if (!userID) {
-        throw new Error('No ID provided');
+        throw new Error(UserController.ERROR_ID_NOT_FOUND);
       }
       const result = await this.userRepository.delete(userID);
 
       if (result.affected === 0) {
-        throw new Error('User with the provided ID not found');
+        throw new Error(
+          UserController.ERROR_USER_WITH_ERROR_ID_NOT_FOUND(userID)
+        );
       }
       ResponseHandler.sendSuccessResponse(res, 'User Deleted', StatusCodes.OK);
     } catch (error: any) {
       ResponseHandler.sendErrorResponse(
         res,
-        StatusCodes.NOT_FOUND,
+        StatusCodes.BAD_REQUEST,
         error.message
       );
     }
@@ -167,19 +179,22 @@ export class UserController {
     const userID = req.body.id;
     try {
       if (!userID) {
-        throw new Error('No ID Provided!');
+        throw new Error(UserController.ERROR_ID_NOT_FOUND);
       }
 
       let user = await this.userRepository.findOneBy({ userID });
 
       if (!user) {
-        throw new Error('User not found.');
+        throw new Error(
+          UserController.ERROR_USER_WITH_ERROR_ID_NOT_FOUND(userID)
+        );
       }
 
       user.email = req.body.email;
       user.roleID = req.body.roleID;
       user.firstname = req.body.firstname;
       user.surname = req.body.surname;
+      user.annualLeaveBalance = req.body.annualLeaveBalance;
 
       const errors = await validate(user);
 

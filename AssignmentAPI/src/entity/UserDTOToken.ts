@@ -1,4 +1,4 @@
-import { Role } from '../entity/Role';
+import { Role } from './Role';
 import { RoleName } from '../types/RoleName';
 
 export class UserDTOToken {

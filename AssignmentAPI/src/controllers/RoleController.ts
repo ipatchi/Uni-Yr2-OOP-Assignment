@@ -81,22 +81,17 @@ export class RoleController {
       let role = new Role();
       role.name = req.body.name;
 
-      console.log(role);
-
       const errors = await validate(role);
-      console.log(errors);
 
       if (errors.length > 0) {
         throw new Error(
           errors.map((err) => Object.values(err.constraints || {})).join(', ')
         );
       }
-      console.log('Bonjour');
 
       role = await this.roleRepository.save(role);
       ResponseHandler.sendSuccessResponse(res, role, StatusCodes.CREATED);
     } catch (error: any) {
-      console.log('Not hello');
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,

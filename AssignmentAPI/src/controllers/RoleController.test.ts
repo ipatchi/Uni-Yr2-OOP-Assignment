@@ -7,6 +7,7 @@ import { Request, Response } from 'express';
 import { DeleteResult } from 'typeorm';
 import * as classValidator from 'class-validator';
 import { mock } from 'jest-mock-extended';
+import { RoleName } from '../types/RoleName';
 
 const VALIDATOR_CONTRAINT_NAME_IS_REQUIRED = 'Name is required';
 const VALIDATOR_CONTRAINT_EMPTY_OR_WHITESPACE =
@@ -29,7 +30,7 @@ describe('Role Controller', () => {
   function getValidManagerData(): Role {
     let role = new Role();
     role.roleID = 1;
-    role.name = 'manager';
+    role.name = RoleName.EMPLOYEE;
     return role;
   }
 
@@ -214,8 +215,6 @@ describe('Role Controller', () => {
     const validManagerDetails = getValidManagerData();
     const req = mockRequest({}, { name: validManagerDetails.name });
     const res = mockResponse();
-
-    console.log(req);
 
     mockRoleRepository.save.mockResolvedValue(validManagerDetails);
     jest.spyOn(classValidator, 'validate').mockResolvedValue([]);

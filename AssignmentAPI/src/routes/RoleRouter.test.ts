@@ -17,6 +17,10 @@ const mockRoleController = {
   update: jest.fn((req, res) => res.status(StatusCodes.OK).json(req.body)),
 } as unknown as RoleController;
 
+jest.mock('../helpers/AuthoriseRole', () => ({
+  authoriseRole: () => (req: any, res: any, next: any) => next(),
+}));
+
 const router = Router();
 jest.spyOn(router, 'get');
 jest.spyOn(router, 'post');
