@@ -4,6 +4,7 @@ import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import { useEffect, useState } from "react";
 import type { LeaveRequest } from "~/types/leaveRequest";
 import ManagerRequestRow from "~/components/managerRequestRow";
+import NavigationBar from "~/components/navigationBar";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,7 +16,7 @@ export function meta({}: Route.MetaArgs) {
 type LoaderData = {
   token: string;
   userID: string;
-  role: string;
+  role: number;
   employeeData: any[];
 };
 
@@ -26,7 +27,6 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (!token || !userID || !role) {
     return redirect("/");
   }
-  console.log("User Role:", role);
   if (Number(role) !== 1 && Number(role) !== 2) {
     return redirect("/home");
   }
@@ -38,11 +38,14 @@ export async function loader({ request }: Route.LoaderArgs) {
     },
   });
 
-  const employeeData = employees.ok
-    ? (await employees.json()).data.filter(
-        (employee: any) => employee.managerID.userID === userID
-      )
-    : [];
+  if (!employees.ok) {
+    console.error("Failed to fetch all employees");
+    return redirect("/home");
+  }
+
+  const employeeData = (await employees.json()).data.filter(
+    (employee: any) => employee.managerID.userID === userID
+  );
 
   return { token, userID, role, employeeData };
 }
@@ -148,12 +151,11 @@ export default function Manager() {
             },
           }
         );
-        const requests = reqsResponse.ok
-          ? (await reqsResponse.json()).data
-          : [];
         if (!reqsResponse.ok) {
           console.error("Failed to fetch leave requests");
         }
+        const requests = (await reqsResponse.json()).data;
+
         setLeaveRequests(requests);
       } catch (error) {
         console.error("Loading error: " + error);
@@ -196,6 +198,7 @@ export default function Manager() {
   return (
     <>
       <h1>Manage Employees</h1>
+      <NavigationBar role={role} />
 
       <h2>Leave Requests:</h2>
       <label>Select an Employee:</label>
@@ -232,15 +235,6 @@ export default function Manager() {
           </>
         )}
       </div>
-
-      <h2>Actions:</h2>
-
-      <Form action="/logout" method="post">
-        <button type="submit">Logout</button>
-      </Form>
-      <Form action="/home" method="post">
-        <button type="submit">Home</button>
-      </Form>
     </>
   );
 }

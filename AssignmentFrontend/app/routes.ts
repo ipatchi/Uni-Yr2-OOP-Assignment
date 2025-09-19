@@ -8,4 +8,5 @@ export default [
   route("/manager", "routes/manager.tsx"),
   route("/admin", "routes/admin/admin.tsx"),
   route("/admin/edit-user/:employeeID", "routes/admin/editUser.tsx"),
+  route("/admin/new-user", "routes/admin/newUser.tsx"),
 ] satisfies RouteConfig;

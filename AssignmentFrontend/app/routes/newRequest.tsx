@@ -1,8 +1,11 @@
 import { Form, redirect, useActionData, useLoaderData } from "react-router";
 import type { Route } from "./+types/login";
 import { getToken, getUserID, getUserRole } from "~/sessions.server";
+import NavigationBar from "~/components/navigationBar";
 
-type LoaderData = {};
+type LoaderData = {
+  role: number;
+};
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   const userID = await getUserID(request);
@@ -64,6 +67,7 @@ export async function action({ request }: Route.ActionArgs) {
 
 export default function newRequest() {
   const actionDataRaw = useActionData<typeof action>();
+  const { role } = useLoaderData<LoaderData>();
   const actionData:
     | { startDate?: string; endDate?: string; form?: string }
     | undefined =
@@ -72,6 +76,7 @@ export default function newRequest() {
   return (
     <>
       <h1>New Leave Request</h1>
+      <NavigationBar role={role} />
       <Form action="" method="post">
         <label htmlFor="startDate">Start Date*</label>
         <input type="date" name="startDate" id="startDate" required />

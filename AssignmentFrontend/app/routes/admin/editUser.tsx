@@ -4,6 +4,7 @@ import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import type { User } from "~/types/user";
 import type { Management } from "~/types/management";
 import { useState } from "react";
+import NavigationBar from "~/components/navigationBar";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -21,7 +22,7 @@ interface LoaderArgs extends Route.LoaderArgs {
 type LoaderData = {
   token: string;
   userID: string;
-  role: string;
+  role: number;
   employeeData: User;
   employeeManagerData: Management;
   allManagersData: User[];
@@ -70,12 +71,13 @@ export async function loader({ request, params }: LoaderArgs) {
     }
   );
 
+  let employeeManagerData: Management | null = null;
   if (!employeesManager.ok) {
     console.log("Failed to fetch employee's manager data");
-    return redirect("/admin");
+    employeeManagerData = null;
+  } else {
+    employeeManagerData = (await employeesManager.json()).data;
   }
-
-  const employeeManagerData = (await employeesManager.json()).data;
 
   const allManagers = await fetch(`http://localhost:8900/api/users`, {
     method: "GET",
@@ -184,7 +186,7 @@ export default function editUser() {
 
   const [usersRole, setUsersRole] = useState(employeeData.roleID.name);
   const [usersManager, setUsersManager] = useState(
-    employeeManagerData.managerID.userID || null
+    employeeManagerData?.managerID.userID || null
   );
   const [usersLeaveBalance, setUsersLeaveBalance] = useState<number>(
     employeeData.annualLeaveBalance
@@ -195,6 +197,7 @@ export default function editUser() {
   return (
     <>
       <h1>Edit User</h1>
+      <NavigationBar role={role} />
 
       <h2>User Data:</h2>
       <p>Name: {`${employeeData.firstname} ${employeeData.surname}`}</p>
@@ -247,18 +250,6 @@ export default function editUser() {
         <input type="hidden" name="surname" value={employeeData.surname} />
       </Form>
       {actionData?.error && <p>{actionData.error}</p>}
-
-      <h2>Actions:</h2>
-
-      <Form action="/logout" method="post">
-        <button type="submit">Logout</button>
-      </Form>
-      <Form action="/home" method="post">
-        <button type="submit">Home</button>
-      </Form>
-      <Form action="/admin" method="post">
-        <button type="submit">Return</button>
-      </Form>
     </>
   );
 }

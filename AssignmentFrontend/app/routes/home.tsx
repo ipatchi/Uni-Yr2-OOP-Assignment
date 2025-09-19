@@ -3,6 +3,7 @@ import type { Route } from "./+types/login";
 import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import { use } from "react";
 import RequestRow from "~/components/requestRow";
+import NavigationBar from "~/components/navigationBar";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -100,6 +101,7 @@ export default function Home() {
   return (
     <>
       <h1>Home Page</h1>
+      <NavigationBar role={role} />
       <p>Your remaining leave balance is: {balance} days</p>
       <h2>Your Leave Requests:</h2>
       {requests.length === 0 ? (
@@ -110,23 +112,6 @@ export default function Home() {
             <RequestRow key={request.leaveRequestID} request={request} />
           ))}
         </ul>
-      )}
-      <h2>Actions:</h2>
-      <Form action="/logout" method="post">
-        <button type="submit">Logout</button>
-      </Form>
-      <Form action="/new-request" method="post">
-        <button type="submit">New Leave Request</button>
-      </Form>
-      {(role === 1 || role === 2) && (
-        <Form action="/manager" method="post">
-          <button type="submit">Manager</button>
-        </Form>
-      )}
-      {role === 1 && (
-        <Form action="/admin" method="post">
-          <button type="submit">Admin</button>
-        </Form>
       )}
     </>
   );

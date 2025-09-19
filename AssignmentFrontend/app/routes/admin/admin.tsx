@@ -1,9 +1,17 @@
-import { Form, Link, redirect, useLoaderData } from "react-router";
+import {
+  Form,
+  Link,
+  redirect,
+  useActionData,
+  useLoaderData,
+} from "react-router";
 import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import { useEffect, useState } from "react";
 import type { LeaveRequest } from "~/types/leaveRequest";
 import ManagerRequestRow from "~/components/managerRequestRow";
 import type { Route } from "../+types/login";
+import type { User } from "~/types/user";
+import NavigationBar from "~/components/navigationBar";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -15,7 +23,7 @@ export function meta({}: Route.MetaArgs) {
 type LoaderData = {
   token: string;
   userID: string;
-  role: string;
+  role: number;
   employeeData: any[];
 };
 
@@ -37,7 +45,12 @@ export async function loader({ request }: Route.LoaderArgs) {
     },
   });
 
-  const employeeData = employees.ok ? (await employees.json()).data : [];
+  if (!employees.ok) {
+    console.error("Failed to fetch all employees");
+    return redirect("/home");
+  }
+
+  const employeeData = (await employees.json()).data;
 
   return { token, userID, role, employeeData };
 }
@@ -56,10 +69,7 @@ export async function action({ request }: Route.ActionArgs) {
     const reason = formData.get("reason");
     const userID = formData.get("userID");
     if (!leaveRequestID || !reason || !userID) {
-      console.error(
-        "Leave Request ID, reason, and userID are required to approve a request"
-      );
-      return null;
+      return { error: "All fields are required." };
     }
 
     const response = await fetch(
@@ -78,20 +88,18 @@ export async function action({ request }: Route.ActionArgs) {
       }
     );
     if (!response.ok) {
-      console.error("Failed to approve leave request", await response.text());
-      return null;
+      return { error: "Failed to Approve: " + (await response.text()) };
     }
   }
   if (intent === "rejectRequest") {
     const leaveRequestID = formData.get("leaveRequestID");
     const reason = formData.get("reason");
     const userID = formData.get("userID");
-    console.log("Rejecting request:", { leaveRequestID, reason, userID });
     if (!leaveRequestID || !reason || !userID) {
-      console.error(
-        "Leave Request ID, reason, and userID are required to reject a request"
-      );
-      return null;
+      return {
+        error:
+          "Leave Request ID, reason, and userID are required to reject a request",
+      };
     }
 
     const response = await fetch(
@@ -110,26 +118,32 @@ export async function action({ request }: Route.ActionArgs) {
       }
     );
     if (!response.ok) {
-      console.error("Failed to reject leave request", await response.text());
-      return null;
+      return {
+        error: "Failed to reject leave request: " + (await response.text()),
+      };
     }
   }
 }
 
-export default function Manager() {
+export default function Admin() {
   const { token, userID, role, employeeData } = useLoaderData<LoaderData>();
 
   const [selectedEmployeeID, setSelectedEmployeeID] = useState("");
-  const [selectedEmployeeData, setSelectedEmployeeData] = useState<any>(null);
+  const [selectedEmployeeData, setSelectedEmployeeData] = useState<User>();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [leaveRemaining, setLeaveRemaining] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedEmployeeID) {
-      return;
+      setError("Please select an employee to view their requests.");
+    } else {
+      setError(null);
     }
-    console.log("Selected Employee ID:", selectedEmployeeID);
+    setLeaveRequests([]);
+    setLeaveRemaining(0);
+    setSelectedEmployeeData(undefined);
 
     const fetchLeaveRequests = async () => {
       setIsLoading(true);
@@ -144,15 +158,17 @@ export default function Manager() {
             },
           }
         );
-        const requests = reqsResponse.ok
-          ? (await reqsResponse.json()).data
-          : [];
         if (!reqsResponse.ok) {
           console.error("Failed to fetch leave requests");
+          setError("Failed to fetch leave requests");
+          return redirect("/home");
         }
+        const requests = (await reqsResponse.json()).data;
+
         setLeaveRequests(requests);
       } catch (error) {
-        console.error("Loading error: " + error);
+        setError("Loading error: " + error);
+        return redirect("/home");
       }
     };
     const fetchEmployeeData = async () => {
@@ -168,14 +184,19 @@ export default function Manager() {
             },
           }
         );
-        const data = reqsResponse.ok ? (await reqsResponse.json()).data : 0;
         if (!reqsResponse.ok) {
           console.error("Failed to fetch employee data");
+          setError("Failed to fetch employee data");
+          return redirect("/home");
         }
+        const data = (await reqsResponse.json()).data;
+
         setLeaveRemaining(data.annualLeaveBalance);
         setSelectedEmployeeData(data);
       } catch (error) {
-        console.error("Loading error: " + error);
+        console.log("Error fetching employee data:", error);
+        setError("Loading Error: " + error);
+        return redirect("/home");
       }
     };
 
@@ -188,9 +209,12 @@ export default function Manager() {
     setSelectedEmployeeID(newID);
   };
 
+  const actionData = useActionData<typeof action>();
+
   return (
     <>
       <h1>Manage Employees</h1>
+      <NavigationBar role={role} />
 
       <h2>Leave Requests:</h2>
       <label>Select an Employee:</label>
@@ -206,11 +230,15 @@ export default function Manager() {
           </option>
         ))}
       </select>
+      {error && <p>{error}</p>}
+      {actionData?.error && <p>{actionData.error}</p>}
       {selectedEmployeeData && (
         <>
           <p>Leave Remaining: {leaveRemaining} days</p>
-          <p>Role: {selectedEmployeeData.roleID.name}</p>
-          <Link to={`/admin/edit-user/${selectedEmployeeID}`}>Edit User</Link>
+          <p>Role: {selectedEmployeeData?.roleID?.name || "Unknown"}</p>
+          {selectedEmployeeID && (
+            <Link to={`/admin/edit-user/${selectedEmployeeID}`}>Edit User</Link>
+          )}
         </>
       )}
       <div>
@@ -234,15 +262,6 @@ export default function Manager() {
           </>
         )}
       </div>
-
-      <h2>Actions:</h2>
-
-      <Form action="/logout" method="post">
-        <button type="submit">Logout</button>
-      </Form>
-      <Form action="/home" method="post">
-        <button type="submit">Home</button>
-      </Form>
     </>
   );
 }
