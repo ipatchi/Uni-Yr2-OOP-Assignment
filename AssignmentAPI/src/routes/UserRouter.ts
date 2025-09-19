@@ -25,7 +25,6 @@ export class UserRouter {
     );
     this.router.get(
       '/email/:emailAddress',
-      authoriseRole(RoleName.ADMIN),
       this.userController.getByEmail
     );
     this.router.get(
