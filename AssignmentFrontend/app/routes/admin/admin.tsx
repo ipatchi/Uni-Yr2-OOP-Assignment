@@ -1,13 +1,13 @@
-import { Form, redirect, useLoaderData } from "react-router";
-import type { Route } from "./+types/login";
+import { Form, Link, redirect, useLoaderData } from "react-router";
 import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import { useEffect, useState } from "react";
 import type { LeaveRequest } from "~/types/leaveRequest";
 import ManagerRequestRow from "~/components/managerRequestRow";
+import type { Route } from "../+types/login";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "Leave Request - Manager Hub" },
+    { title: "Leave Request - Admin Hub" },
     { name: "description", content: "Welcome to the Leave Request system!" },
   ];
 }
@@ -26,23 +26,18 @@ export async function loader({ request }: Route.LoaderArgs) {
   if (!token || !userID || !role) {
     return redirect("/");
   }
-  console.log("User Role:", role);
-  if (Number(role) !== 1 && Number(role) !== 2) {
+  if (Number(role) !== 1) {
     return redirect("/home");
   }
 
-  const employees = await fetch(`http://localhost:8900/api/managers`, {
+  const employees = await fetch(`http://localhost:8900/api/users`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
-  const employeeData = employees.ok
-    ? (await employees.json()).data.filter(
-        (employee: any) => employee.managerID.userID === userID
-      )
-    : [];
+  const employeeData = employees.ok ? (await employees.json()).data : [];
 
   return { token, userID, role, employeeData };
 }
@@ -125,6 +120,7 @@ export default function Manager() {
   const { token, userID, role, employeeData } = useLoaderData<LoaderData>();
 
   const [selectedEmployeeID, setSelectedEmployeeID] = useState("");
+  const [selectedEmployeeData, setSelectedEmployeeData] = useState<any>(null);
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
   const [leaveRemaining, setLeaveRemaining] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -159,11 +155,11 @@ export default function Manager() {
         console.error("Loading error: " + error);
       }
     };
-    const fetchLeaveRemaining = async () => {
+    const fetchEmployeeData = async () => {
       setIsLoading(true);
       try {
         const reqsResponse = await fetch(
-          `http://localhost:8900/api/leave-requests/remaining/${selectedEmployeeID}`,
+          `http://localhost:8900/api/users/${selectedEmployeeID}`,
           {
             method: "GET",
             headers: {
@@ -172,20 +168,19 @@ export default function Manager() {
             },
           }
         );
-        const balance = reqsResponse.ok
-          ? (await reqsResponse.json()).data.leaveBalance
-          : 0;
+        const data = reqsResponse.ok ? (await reqsResponse.json()).data : 0;
         if (!reqsResponse.ok) {
-          console.error("Failed to fetch leave balance");
+          console.error("Failed to fetch employee data");
         }
-        setLeaveRemaining(balance);
+        setLeaveRemaining(data.annualLeaveBalance);
+        setSelectedEmployeeData(data);
       } catch (error) {
         console.error("Loading error: " + error);
       }
     };
 
     fetchLeaveRequests();
-    fetchLeaveRemaining();
+    fetchEmployeeData();
     setIsLoading(false);
   }, [selectedEmployeeID, token]);
 
@@ -206,14 +201,21 @@ export default function Manager() {
       >
         <option value="">Select an Employee</option>
         {employeeData.map((employee) => (
-          <option key={employee.userID.userID} value={employee.userID.userID}>
-            {`${employee.userID.firstname} ${employee.userID.surname} - ${employee.userID.userID}`}
+          <option key={employee.userID} value={employee.userID}>
+            {`${employee.firstname} ${employee.surname} - ${employee.userID}`}
           </option>
         ))}
       </select>
+      {selectedEmployeeData && (
+        <>
+          <p>Leave Remaining: {leaveRemaining} days</p>
+          <p>Role: {selectedEmployeeData.roleID.name}</p>
+          <Link to={`/admin/edit-user/${selectedEmployeeID}`}>Edit User</Link>
+        </>
+      )}
       <div>
         {isLoading && <p>Loading...</p>}
-        <p>Leave Remaining: {leaveRemaining} days</p>
+
         {!isLoading && leaveRequests.length === 0 && (
           <p>No leave requests found.</p>
         )}

@@ -1,11 +1,11 @@
-import { Repository } from 'typeorm';
-import { User } from '../entity/User';
-import { AppDataSource } from '../data-source';
-import { ResponseHandler } from '../helpers/ResponseHandler';
-import { StatusCodes } from 'http-status-codes';
-import { Request, Response } from 'express';
-import { validate } from 'class-validator';
-import { instanceToPlain } from 'class-transformer';
+import { Repository } from "typeorm";
+import { User } from "../entity/User";
+import { AppDataSource } from "../data-source";
+import { ResponseHandler } from "../helpers/ResponseHandler";
+import { StatusCodes } from "http-status-codes";
+import { Request, Response } from "express";
+import { validate } from "class-validator";
+import { instanceToPlain } from "class-transformer";
 
 export class UserController {
   private userRepository: Repository<User>;
@@ -26,7 +26,7 @@ export class UserController {
   public getAll = async (req: Request, res: Response): Promise<void> => {
     try {
       const users = await this.userRepository.find({
-        relations: ['roleID'],
+        relations: ["roleID"],
       });
 
       if (users.length === 0) {
@@ -59,7 +59,7 @@ export class UserController {
     try {
       const user = await this.userRepository.findOne({
         where: { email: email },
-        relations: ['roleID'],
+        relations: ["roleID"],
       });
 
       if (!user) {
@@ -96,7 +96,7 @@ export class UserController {
     try {
       const user = await this.userRepository.findOne({
         where: { userID: userID },
-        relations: ['roleID'],
+        relations: ["roleID"],
       });
 
       if (!user) {
@@ -131,7 +131,7 @@ export class UserController {
       const errors = await validate(user);
       if (errors.length > 0) {
         throw new Error(
-          errors.map((err) => Object.values(err.constraints || {})).join(', ')
+          errors.map((err) => Object.values(err.constraints || {})).join(", ")
         );
       }
 
@@ -151,7 +151,7 @@ export class UserController {
   };
 
   public delete = async (req: Request, res: Response): Promise<void> => {
-    console.log('Reached delete');
+    console.log("Reached delete");
     const userID = parseInt(req.params.id);
     console.log(`Deleting userID: ${userID}`);
     try {
@@ -165,7 +165,7 @@ export class UserController {
           UserController.ERROR_USER_WITH_ERROR_ID_NOT_FOUND(userID)
         );
       }
-      ResponseHandler.sendSuccessResponse(res, 'User Deleted', StatusCodes.OK);
+      ResponseHandler.sendSuccessResponse(res, "User Deleted", StatusCodes.OK);
     } catch (error: any) {
       ResponseHandler.sendErrorResponse(
         res,
@@ -182,7 +182,11 @@ export class UserController {
         throw new Error(UserController.ERROR_ID_NOT_FOUND);
       }
 
-      let user = await this.userRepository.findOneBy({ userID });
+      let user = await this.userRepository
+        .createQueryBuilder("user")
+        .addSelect("user.password")
+        .where("user.userID = :id", { id: userID })
+        .getOne();
 
       if (!user) {
         throw new Error(
@@ -194,13 +198,18 @@ export class UserController {
       user.roleID = req.body.roleID;
       user.firstname = req.body.firstname;
       user.surname = req.body.surname;
-      user.annualLeaveBalance = req.body.annualLeaveBalance;
+      user.annualLeaveBalance = Number(req.body.annualLeaveBalance);
+
+      console.log("Annual Leave Balance to set:", user.annualLeaveBalance);
+      console.log(req.body);
+      console.log(req.body.annualLeaveBalance);
+      console.log(typeof req.body.annualLeaveBalance);
 
       const errors = await validate(user);
 
       if (errors.length > 0) {
         throw new Error(
-          errors.map((err) => Object.values(err.constraints || {})).join(', ')
+          errors.map((err) => Object.values(err.constraints || {})).join(", ")
         );
       }
 

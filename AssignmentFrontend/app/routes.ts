@@ -6,4 +6,6 @@ export default [
   route("/logout", "routes/logout.tsx"),
   route("/new-request", "routes/newRequest.tsx"),
   route("/manager", "routes/manager.tsx"),
+  route("/admin", "routes/admin/admin.tsx"),
+  route("/admin/edit-user/:employeeID", "routes/admin/editUser.tsx"),
 ] satisfies RouteConfig;
