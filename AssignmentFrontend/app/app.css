@@ -1,13 +1,14 @@
 /* Overarching Body Styles */
 :root {
-  --primary-blue: #5382fa;
+  --primary-blue: #2c53b5;
   --hover-blue: #536cfa;
   --border-white: #ffffff;
   --border-grey: #333333;
-  --destructive-red: #e53e3e;
+  --destructive-red: #d14444;
   --destructive-hover-red: #e53e3e;
   --text-white: #ffffff;
   --text-grey: #6b7280;
+  --text-red: #600000;
   --text-dark-grey: #333333;
   --background-light: #f9fafb;
   --background-light-standout: #ffffff;
@@ -255,5 +256,5 @@ label {
 }
 
 p.error {
-  color: var(--destructive-red);
+  color: var(--text-red);
 }

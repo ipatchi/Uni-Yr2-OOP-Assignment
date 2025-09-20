@@ -16,7 +16,10 @@ import NavigationBar from "~/components/navigationBar";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Leave Request - Admin Hub" },
-    { name: "description", content: "Welcome to the Leave Request system!" },
+    {
+      name: "description",
+      content: "This is the admin system for the leave request application.",
+    },
   ];
 }
 
@@ -226,7 +229,7 @@ export default function Admin() {
           <button type="submit">Add New User</button>
         </Form>
       </div>
-      <label>Select an Employee:</label>
+      <label htmlFor="employeeSelect">Select an Employee:</label>
       <div className="select-wrapper">
         <select
           id="employeeSelect"

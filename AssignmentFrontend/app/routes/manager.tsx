@@ -9,7 +9,7 @@ import NavigationBar from "~/components/navigationBar";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Leave Request - Manager Hub" },
-    { name: "description", content: "Welcome to the Leave Request system!" },
+    { name: "description", content: "Manage Employees" },
   ];
 }
 

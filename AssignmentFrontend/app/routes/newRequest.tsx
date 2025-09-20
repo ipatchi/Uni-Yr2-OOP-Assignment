@@ -3,6 +3,13 @@ import type { Route } from "./+types/login";
 import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import NavigationBar from "~/components/navigationBar";
 
+export function meta({}: Route.MetaArgs) {
+  return [
+    { title: "Leave Request - New Leave Request" },
+    { name: "description", content: "Create new leave requests" },
+  ];
+}
+
 type LoaderData = {
   role: number;
 };

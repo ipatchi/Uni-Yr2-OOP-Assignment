@@ -9,7 +9,7 @@ import NavigationBar from "~/components/navigationBar";
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Leave Request - Admin - New User" },
-    { name: "description", content: "Welcome to the Leave Request system!" },
+    { name: "description", content: "Add a new user to the system." },
   ];
 }
 
@@ -149,37 +149,68 @@ export default function newUser() {
       {actionData?.error && <p style={{ color: "red" }}>{actionData.error}</p>}
       <div className="large-form-container">
         <Form method="post">
-          <label htmlFor="email">Email:</label>
           <div>
-            <input type="email" name="email" required />
+            <label htmlFor="email">Email:</label>
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="Enter email"
+            />
           </div>
-          <label htmlFor="password1">Password:</label>
+
           <div>
-            <input type="password" name="password1" required />
+            <label htmlFor="password1">Password:</label>
+            <input
+              type="password"
+              name="password1"
+              required
+              placeholder="Enter password"
+            />
           </div>
-          <label htmlFor="password2">Confirm Password:</label>
+
           <div>
-            <input type="password" name="password2" required />
+            <label htmlFor="password2">Confirm Password:</label>
+            <input
+              type="password"
+              name="password2"
+              required
+              placeholder="Confirm password"
+            />
           </div>
-          <label htmlFor="roleID">Role:</label>
+
           <div>
-            <select name="roleID" required>
-              <option value="1">Admin</option>
-              <option value="2">Manager</option>
+            <label htmlFor="roleID">Role:</label>
+            <select name="roleID" id="roleID" required>
               <option value="3">Employee</option>
+              <option value="2">Manager</option>
+              <option value="1">Admin</option>
             </select>
           </div>
-          <label htmlFor="firstname">First Name:</label>
+
           <div>
-            <input type="text" name="firstname" required />
+            <label htmlFor="firstname">First Name:</label>
+            <input
+              type="text"
+              name="firstname"
+              required
+              placeholder="Enter first name"
+            />
           </div>
-          <label htmlFor="surname">Surname:</label>
+
           <div>
-            <input type="text" name="surname" required />
+            <label htmlFor="surname">Surname:</label>
+            <input
+              type="text"
+              name="surname"
+              required
+              placeholder="Enter surname"
+            />
           </div>
-          <label htmlFor="managerID">Manager:</label>
+
           <div>
-            <select name="managerID">
+            <label htmlFor="managerID">Manager:</label>
+            <select name="managerID" id="managerID" required>
               {allManagersData.map((manager: User) => (
                 <option key={manager.userID} value={manager.userID}>
                   {`${manager.firstname} ${manager.surname}`}
