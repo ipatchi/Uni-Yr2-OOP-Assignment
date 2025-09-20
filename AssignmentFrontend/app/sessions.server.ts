@@ -11,7 +11,7 @@ export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: "__session",
     httpOnly: true,
-    maxAge: 60 * 5,
+    maxAge: 60 * 15,
     path: "/",
     sameSite: "lax",
     secrets: ["s3cr3t"],
@@ -80,7 +80,7 @@ export async function createUserSession({
   return redirect(redirectTo, {
     headers: {
       "Set-Cookie": await commitSession(session, {
-        maxAge: remember ? 60 * 5 : undefined,
+        maxAge: remember ? 60 * 15 : undefined,
       }),
     },
   });

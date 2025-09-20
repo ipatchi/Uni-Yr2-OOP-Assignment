@@ -71,8 +71,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Login() {
   const actionData = useActionData<typeof action>();
   return (
-    <>
-      <h1>Login</h1>
+    <div className="card-container">
+      <h2>Sign In</h2>
       <Form method="post">
         <div>
           <label htmlFor="email">Email:</label>
@@ -84,10 +84,10 @@ export default function Login() {
           <input type="password" id="password" name="password" required />
         </div>
 
-        {actionData?.error && <p>{actionData.error}</p>}
+        {actionData?.error && <p className="error">{actionData.error}</p>}
 
         <input type="submit" value="Login" />
       </Form>
-    </>
+    </div>
   );
 }

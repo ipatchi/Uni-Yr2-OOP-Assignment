@@ -88,6 +88,8 @@ export async function action({ request }: Route.ActionArgs) {
     if (!response.ok) {
       console.error("Failed to approve leave request", await response.text());
       return null;
+    } else {
+      return redirect("/manager");
     }
   }
   if (intent === "rejectRequest") {
@@ -120,6 +122,8 @@ export async function action({ request }: Route.ActionArgs) {
     if (!response.ok) {
       console.error("Failed to reject leave request", await response.text());
       return null;
+    } else {
+      return redirect("/manager");
     }
   }
 }
@@ -197,42 +201,50 @@ export default function Manager() {
 
   return (
     <>
-      <h1>Manage Employees</h1>
       <NavigationBar role={role} />
+      <h2>Manage Employees</h2>
 
-      <h2>Leave Requests:</h2>
-      <label>Select an Employee:</label>
-      <select
-        id="employeeSelect"
-        value={selectedEmployeeID}
-        onChange={(e) => handleEmployeeChange(e.target.value)}
-      >
-        <option value="">Select an Employee</option>
-        {employeeData.map((employee) => (
-          <option key={employee.userID.userID} value={employee.userID.userID}>
-            {`${employee.userID.firstname} ${employee.userID.surname} - ${employee.userID.userID}`}
-          </option>
-        ))}
-      </select>
+      <h3>Leave Requests:</h3>
+      <label htmlFor="employeeSelect">Select an Employee:</label>
+      <div className="select-wrapper">
+        <select
+          id="employeeSelect"
+          value={selectedEmployeeID}
+          onChange={(e) => handleEmployeeChange(e.target.value)}
+        >
+          <option value="">Select an Employee</option>
+          {employeeData.map((employee) => (
+            <option key={employee.userID.userID} value={employee.userID.userID}>
+              {`${employee.userID.firstname} ${employee.userID.surname}`}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div>
         {isLoading && <p>Loading...</p>}
         <p>Leave Remaining: {leaveRemaining} days</p>
-        {!isLoading && leaveRequests.length === 0 && (
-          <p>No leave requests found.</p>
-        )}
+        {!isLoading &&
+          (!leaveRequests || (leaveRequests && leaveRequests.length === 0)) && (
+            <p className="error">No leave requests found.</p>
+          )}
         {!isLoading && leaveRequests.length > 0 && (
-          <>
+          <div>
             <ul>
+              <li className="request-header">
+                <span className="request-cell">Dates</span>
+                <span className="request-cell">Reason</span>
+                <span className="request-cell">Status</span>
+                <span className="request-cell">Actions</span>
+              </li>
               {leaveRequests.map((request) => (
-                <li key={request.leaveRequestID}>
-                  <ManagerRequestRow
-                    request={request}
-                    userID={selectedEmployeeID}
-                  />
-                </li>
+                <ManagerRequestRow
+                  request={request}
+                  userID={selectedEmployeeID}
+                />
               ))}
             </ul>
-          </>
+          </div>
         )}
       </div>
     </>

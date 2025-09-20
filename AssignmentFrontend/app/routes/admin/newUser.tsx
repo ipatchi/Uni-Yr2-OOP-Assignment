@@ -86,10 +86,10 @@ export async function action({ request }: Route.ActionArgs) {
     !roleID ||
     !managerID
   ) {
-    return { error: "All fields are required." };
+    return { error: "Error: All fields are required." };
   }
   if (password1 !== password2) {
-    return { error: "Passwords do not match." };
+    return { error: "Error: Passwords do not match." };
   }
 
   try {
@@ -109,7 +109,7 @@ export async function action({ request }: Route.ActionArgs) {
     });
     if (!response.ok) {
       const apiError = await response.json();
-      return { error: "Error Creating User: " + apiError.error.message };
+      return { error: "Error: " + apiError.error.message };
     }
 
     const newUser = await response.json();
@@ -144,42 +144,41 @@ export default function newUser() {
 
   return (
     <>
-      <h1>Create New User</h1>
       <NavigationBar role={role} />
-
+      <h2>Create New User</h2>
       {actionData?.error && <p style={{ color: "red" }}>{actionData.error}</p>}
 
       <Form method="post">
+        <label htmlFor="email">Email:</label>
         <div>
-          <label htmlFor="email">Email:</label>
           <input type="email" name="email" required />
         </div>
+        <label htmlFor="password1">Password:</label>
         <div>
-          <label htmlFor="password1">Password:</label>
           <input type="password" name="password1" required />
         </div>
+        <label htmlFor="password2">Confirm Password:</label>
         <div>
-          <label htmlFor="password2">Confirm Password:</label>
           <input type="password" name="password2" required />
         </div>
-        <div>
-          <label htmlFor="roleID">Role:</label>
+        <label htmlFor="roleID">Role:</label>
+        <div className="select-wrapper">
           <select name="roleID" required>
             <option value="1">Admin</option>
             <option value="2">Manager</option>
             <option value="3">Employee</option>
           </select>
         </div>
+        <label htmlFor="firstname">First Name:</label>
         <div>
-          <label htmlFor="firstname">First Name:</label>
           <input type="text" name="firstname" required />
         </div>
+        <label htmlFor="surname">Surname:</label>
         <div>
-          <label htmlFor="surname">Surname:</label>
           <input type="text" name="surname" required />
         </div>
-        <div>
-          <label htmlFor="managerID">Manager:</label>
+        <label htmlFor="managerID">Manager:</label>
+        <div className="select-wrapper">
           <select name="managerID">
             {allManagersData.map((manager: User) => (
               <option key={manager.userID} value={manager.userID}>
@@ -188,7 +187,9 @@ export default function newUser() {
             ))}
           </select>
         </div>
-        <button type="submit">Create User</button>
+        <div className="select-wrapper">
+          <button type="submit">Create User</button>
+        </div>
       </Form>
     </>
   );

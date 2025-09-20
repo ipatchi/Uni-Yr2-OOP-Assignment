@@ -1,0 +1,254 @@
+/* Overarching Body Styles */
+:root {
+  --primary-blue: #5382fa;
+  --hover-blue: #536cfa;
+  --border-white: #ffffff;
+  --border-grey: #333333;
+  --destructive-red: #e53e3e;
+  --destructive-hover-red: #e53e3e;
+  --text-white: #ffffff;
+  --text-grey: #6b7280;
+  --text-dark-grey: #333333;
+  --background-light: #f9fafb;
+  --background-light-standout: #ffffff;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-light);
+}
+
+/* Input Component Styles */
+
+button,
+input[type="submit"] {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: var(--primary-blue);
+  color: var(--text-white);
+  border: 4px solid var(--primary-blue);
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background-color: var(--hover-blue);
+  border: 4px double var(--border-white);
+}
+
+button.destructive {
+  background-color: var(--destructive-red);
+  border: 4px solid var(--destructive-red);
+}
+button.destructive:hover {
+  background-color: var(--destructive-red);
+  border: 4px double var(--border-white);
+}
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.5rem 0 1rem 0;
+  border: 1px solid var(--border-grey);
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+input[type="date"] {
+  width: 60%;
+  font-size: 1rem;
+  margin: 1rem;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 60%;
+  margin: 1rem;
+}
+
+.select-wrapper {
+  position: relative;
+
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  width: 60%;
+}
+
+select {
+  cursor: pointer;
+}
+
+select:focus-visible {
+  outline: 2px solid var(--primary-blue);
+  outline-offset: 2px;
+  border-color: var(--primary-blue);
+}
+
+/* Container Styles */
+
+.card-container {
+  background-color: var(--background-light-standout);
+  border: 2px solid var(--border-grey);
+  border-radius: 8px;
+  padding: 1rem;
+  max-width: 400px;
+  margin: 2rem auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.card-container h2,
+.card-container p {
+  text-align: center;
+  margin-top: 0;
+}
+
+.horizontal-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--background-light);
+}
+
+.info-box button {
+  margin: 1rem;
+}
+
+/*Request Table Styles */
+.request-header {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  padding-right: 1rem;
+  border-bottom: 2px solid var(--border-grey);
+  font-weight: bold;
+}
+
+.request-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  padding-right: 1rem;
+  border-bottom: 1px solid var(--border-grey);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.request-row:last-child {
+  border-bottom: none;
+}
+
+.request-row:hover {
+  background-color: var(--background-light);
+}
+.request-cell {
+  color: var(--text-dark-grey);
+  flex-shrink: 0;
+}
+
+.request-header > .request-cell:nth-of-type(1),
+.request-row > .request-cell:nth-of-type(1) {
+  flex-basis: 25%;
+  flex-shrink: 0;
+  padding-right: 10px;
+}
+.request-header > .request-cell:nth-of-type(2),
+.request-row > .request-cell:nth-of-type(2) {
+  flex-basis: 20%;
+  flex-shrink: 0;
+}
+.request-header > .request-cell:nth-of-type(3),
+.request-row > .request-cell:nth-of-type(3) {
+  flex: 2;
+}
+
+.request-header > .request-cell:nth-of-type(4) {
+  flex-grow: 1;
+  text-align: right;
+}
+
+.request-actions {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  /* Change the row to a vertical stack */
+  .request-header {
+    display: none;
+  }
+
+  .request-row {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .request-cell {
+    flex-basis: auto;
+    width: 100%;
+    padding-bottom: 8px;
+  }
+
+  .request-row > .request-cell.reason::before {
+    content: "Reason: ";
+    font-weight: bold;
+    color: var(--text-dark-grey);
+  }
+  .request-row > .request-cell.status::before {
+    content: "Status: ";
+    font-weight: bold;
+    color: var(--text-dark-grey);
+  }
+  .request-row > .request-cell.dates::before {
+    content: "Dates: ";
+    font-weight: bold;
+    color: var(--text-dark-grey);
+  }
+
+  .request-actions {
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 8px;
+  }
+}
+
+/* Text Styles */
+
+h1 {
+  text-align: left;
+  background-color: var(--primary-blue);
+  color: var(--text-white);
+  padding: 1rem;
+  margin: 0;
+}
+
+h2,
+h3 {
+  text-align: left;
+  color: var(--text-dark-grey);
+  padding: 1rem;
+  margin: 0;
+}
+
+p,
+label {
+  color: var(--text-dark-grey);
+  padding: 1rem;
+  margin: 0;
+}
+
+p.error {
+  color: var(--destructive-red);
+}

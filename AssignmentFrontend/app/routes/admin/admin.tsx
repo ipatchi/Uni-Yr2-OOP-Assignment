@@ -89,6 +89,8 @@ export async function action({ request }: Route.ActionArgs) {
     );
     if (!response.ok) {
       return { error: "Failed to Approve: " + (await response.text()) };
+    } else {
+      return redirect("/admin");
     }
   }
   if (intent === "rejectRequest") {
@@ -121,6 +123,8 @@ export async function action({ request }: Route.ActionArgs) {
       return {
         error: "Failed to reject leave request: " + (await response.text()),
       };
+    } else {
+      return redirect("/admin");
     }
   }
 }
@@ -213,50 +217,66 @@ export default function Admin() {
 
   return (
     <>
-      <h1>Manage Employees</h1>
       <NavigationBar role={role} />
+      <h2>Admin Dashboard:</h2>
 
-      <h2>Leave Requests:</h2>
+      <h3>Employees:</h3>
+      <div className="horizontal-container">
+        <Form method="get" action="/admin/new-user">
+          <button type="submit">Add New User</button>
+        </Form>
+      </div>
       <label>Select an Employee:</label>
-      <select
-        id="employeeSelect"
-        value={selectedEmployeeID}
-        onChange={(e) => handleEmployeeChange(e.target.value)}
-      >
-        <option value="">Select an Employee</option>
-        {employeeData.map((employee) => (
-          <option key={employee.userID} value={employee.userID}>
-            {`${employee.firstname} ${employee.surname} - ${employee.userID}`}
-          </option>
-        ))}
-      </select>
-      {error && <p>{error}</p>}
-      {actionData?.error && <p>{actionData.error}</p>}
+      <div className="select-wrapper">
+        <select
+          id="employeeSelect"
+          value={selectedEmployeeID}
+          onChange={(e) => handleEmployeeChange(e.target.value)}
+        >
+          <option value="">Select an Employee</option>
+          {employeeData.map((employee) => (
+            <option key={employee.userID} value={employee.userID}>
+              {`${employee.firstname} ${employee.surname} - ${employee.userID}`}
+            </option>
+          ))}
+        </select>
+      </div>
+      {error && <p className="error">{error}</p>}
+      {actionData?.error && <p className="error">{actionData.error}</p>}
       {selectedEmployeeData && (
-        <>
+        <div className="info-box">
+          {selectedEmployeeID && (
+            <Form
+              method="get"
+              action={`/admin/edit-user/${selectedEmployeeID}`}
+            >
+              <button type="submit">Edit User</button>
+            </Form>
+          )}
           <p>Leave Remaining: {leaveRemaining} days</p>
           <p>Role: {selectedEmployeeData?.roleID?.name || "Unknown"}</p>
-          {selectedEmployeeID && (
-            <Link to={`/admin/edit-user/${selectedEmployeeID}`}>Edit User</Link>
-          )}
-        </>
+        </div>
       )}
       <div>
         {isLoading && <p>Loading...</p>}
 
         {!isLoading && leaveRequests.length === 0 && (
-          <p>No leave requests found.</p>
+          <p>User has no leave requests.</p>
         )}
         {!isLoading && leaveRequests.length > 0 && (
           <>
             <ul>
+              <li className="request-header">
+                <span className="request-cell">Dates</span>
+                <span className="request-cell">Reason</span>
+                <span className="request-cell">Status</span>
+                <span className="request-cell">Actions</span>
+              </li>
               {leaveRequests.map((request) => (
-                <li key={request.leaveRequestID}>
-                  <ManagerRequestRow
-                    request={request}
-                    userID={selectedEmployeeID}
-                  />
-                </li>
+                <ManagerRequestRow
+                  request={request}
+                  userID={selectedEmployeeID}
+                />
               ))}
             </ul>
           </>

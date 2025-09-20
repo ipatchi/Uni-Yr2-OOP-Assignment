@@ -100,19 +100,30 @@ export default function Home() {
 
   return (
     <>
-      <h1>Home Page</h1>
       <NavigationBar role={role} />
-      <p>Your remaining leave balance is: {balance} days</p>
-      <h2>Your Leave Requests:</h2>
-      {requests.length === 0 ? (
-        <p>You have no leave requests.</p>
-      ) : (
-        <ul>
-          {requests.map((request) => (
-            <RequestRow key={request.leaveRequestID} request={request} />
-          ))}
-        </ul>
-      )}
+      <div className="card-container">
+        <p>Your remaining leave balance is:</p>
+        <h2>{balance} days</h2>
+      </div>
+
+      <div>
+        <h2>Your Leave Requests:</h2>
+        {requests.length === 0 ? (
+          <p>You have no leave requests.</p>
+        ) : (
+          <ul>
+            <li className="request-header">
+              <span className="request-cell">Dates</span>
+              <span className="request-cell">Reason</span>
+              <span className="request-cell">Status</span>
+              <span className="request-cell">Actions</span>
+            </li>
+            {requests.map((request) => (
+              <RequestRow key={request.leaveRequestID} request={request} />
+            ))}
+          </ul>
+        )}
+      </div>
     </>
   );
 }

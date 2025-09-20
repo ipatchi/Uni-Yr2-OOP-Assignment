@@ -75,27 +75,22 @@ export default function newRequest() {
 
   return (
     <>
-      <h1>New Leave Request</h1>
       <NavigationBar role={role} />
-      <Form action="" method="post">
-        <label htmlFor="startDate">Start Date*</label>
-        <input type="date" name="startDate" id="startDate" required />
-        <p>{actionData?.startDate}</p>
-        <label htmlFor="endDate">End Date*</label>
-        <input type="date" name="endDate" id="endDate" required />
-        <p>{actionData?.endDate}</p>
-        <label htmlFor="reason">Reason</label>
-        <input type="text" name="reason" id="reason" />
-        <button type="submit">Submit</button>
-        <p>{actionData?.form}</p>
-      </Form>
-      <h2>Actions:</h2>
-      <Form action="/logout" method="post">
-        <button type="submit">Logout</button>
-      </Form>
-      <Form action="/home" method="post">
-        <button type="submit">Home</button>
-      </Form>
+      <h2>New Leave Request</h2>
+      <div className="horizontal-container">
+        <Form action="" method="post">
+          <label htmlFor="startDate">Start Date:</label>
+          <input type="date" name="startDate" id="startDate" required />
+          <p className="error">{actionData?.startDate}</p>
+          <label htmlFor="endDate">End Date:</label>
+          <input type="date" name="endDate" id="endDate" required />
+          <p className="error">{actionData?.endDate}</p>
+          <label htmlFor="reason">Reason:</label>
+          <input type="text" name="reason" id="reason" />
+          <button type="submit">Submit</button>
+          <p className="error">{actionData?.form}</p>
+        </Form>
+      </div>
     </>
   );
 }

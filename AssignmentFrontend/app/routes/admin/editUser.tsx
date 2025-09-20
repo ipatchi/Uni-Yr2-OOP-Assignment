@@ -196,15 +196,15 @@ export default function editUser() {
 
   return (
     <>
-      <h1>Edit User</h1>
       <NavigationBar role={role} />
+      <h2>Edit User</h2>
 
-      <h2>User Data:</h2>
+      <h3>User Data:</h3>
       <p>Name: {`${employeeData.firstname} ${employeeData.surname}`}</p>
       <p>Email: {employeeData.email}</p>
 
-      <div>
-        <label htmlFor="leave-balance-change">Annual Leave Balance:</label>
+      <label htmlFor="leave-balance-change">Annual Leave Balance:</label>
+      <div className="select-wrapper">
         <input
           type="number"
           id="leave-balance-change"
@@ -213,8 +213,8 @@ export default function editUser() {
         />
       </div>
 
-      <div>
-        <label htmlFor="role-select">Role:</label>
+      <label htmlFor="role-select">Role:</label>
+      <div className="select-wrapper">
         <select
           id="role-select"
           value={usersRole}
@@ -225,8 +225,9 @@ export default function editUser() {
           <option value="Admin">Admin</option>
         </select>
       </div>
-      <div>
-        <label htmlFor="manager-select">Manager:</label>
+
+      <label htmlFor="manager-select">Manager:</label>
+      <div className="select-wrapper">
         <select
           id="manager-select"
           value={usersManager ?? ""}
@@ -239,17 +240,27 @@ export default function editUser() {
           ))}
         </select>
       </div>
-      <Form method="post">
-        <button type="submit">Save Changes</button>
-        <input type="hidden" name="roleID" value={employeeData.roleID.roleID} />
-        <input type="hidden" name="managerID" value={usersManager ?? ""} />
-        <input type="hidden" name="leaveBalance" value={usersLeaveBalance} />
-        <input type="hidden" name="userID" value={employeeData.userID} />
-        <input type="hidden" name="email" value={employeeData.email} />
-        <input type="hidden" name="firstname" value={employeeData.firstname} />
-        <input type="hidden" name="surname" value={employeeData.surname} />
-      </Form>
-      {actionData?.error && <p>{actionData.error}</p>}
+      {actionData?.error && <p className="error">{actionData.error}</p>}
+      <div className="horizontal-container">
+        <Form method="post">
+          <button type="submit">Save Changes</button>
+          <input
+            type="hidden"
+            name="roleID"
+            value={employeeData.roleID.roleID}
+          />
+          <input type="hidden" name="managerID" value={usersManager ?? ""} />
+          <input type="hidden" name="leaveBalance" value={usersLeaveBalance} />
+          <input type="hidden" name="userID" value={employeeData.userID} />
+          <input type="hidden" name="email" value={employeeData.email} />
+          <input
+            type="hidden"
+            name="firstname"
+            value={employeeData.firstname}
+          />
+          <input type="hidden" name="surname" value={employeeData.surname} />
+        </Form>
+      </div>
     </>
   );
 }

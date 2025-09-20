@@ -8,14 +8,19 @@ export default function RequestRow({
   request: LeaveRequest;
   userID: string;
 }) {
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-GB");
+  };
   return (
-    <li key={request.leaveRequestID}>
-      {`${request.startDate} to ${request.endDate} - ${request.reason} - ${request.status}`}
+    <li key={request.leaveRequestID} className="request-row">
+      <span className="request-cell dates">{`${formatDate(request.startDate)} - ${formatDate(request.endDate)}`}</span>
+      <span className="request-cell reason">{request.reason}</span>
+      <span className="request-cell status">{request.status}</span>
       {request.status === "Pending" && (
-        <>
+        <div className="request-actions">
           <Form method="post">
             <input type="hidden" name="_action" value="approveRequest" />
-            <input type="text" name="reason" />
+            <input type="text" name="reason" placeholder="Approval Reason..." />
             <input type="hidden" name="userID" value={userID} />
             <input
               type="hidden"
@@ -26,16 +31,22 @@ export default function RequestRow({
           </Form>
           <Form method="post">
             <input type="hidden" name="_action" value="rejectRequest" />
-            <input type="text" name="reason" />
+            <input
+              type="text"
+              name="reason"
+              placeholder="Rejection Reason..."
+            />
             <input type="hidden" name="userID" value={userID} />
             <input
               type="hidden"
               name="leaveRequestID"
               value={request.leaveRequestID}
             />
-            <button type="submit">Reject</button>
+            <button type="submit" className="destructive">
+              Reject
+            </button>
           </Form>
-        </>
+        </div>
       )}
     </li>
   );

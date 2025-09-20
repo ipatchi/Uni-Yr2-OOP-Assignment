@@ -2,7 +2,10 @@ import { Form } from "react-router";
 
 export default function navigationBar({ role }: { role: number }) {
   return (
-    <nav className="flex flex-wrap gap-4 p-4 border border-gray-300">
+    <nav className="horizontal-container">
+      <Form action="/home" method="post">
+        <button type="submit">Home</button>
+      </Form>
       <Form action="/new-request" method="post">
         <button type="submit">New Leave Request</button>
       </Form>
