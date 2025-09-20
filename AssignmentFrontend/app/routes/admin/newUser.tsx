@@ -147,50 +147,50 @@ export default function newUser() {
       <NavigationBar role={role} />
       <h2>Create New User</h2>
       {actionData?.error && <p style={{ color: "red" }}>{actionData.error}</p>}
+      <div className="large-form-container">
+        <Form method="post">
+          <label htmlFor="email">Email:</label>
+          <div>
+            <input type="email" name="email" required />
+          </div>
+          <label htmlFor="password1">Password:</label>
+          <div>
+            <input type="password" name="password1" required />
+          </div>
+          <label htmlFor="password2">Confirm Password:</label>
+          <div>
+            <input type="password" name="password2" required />
+          </div>
+          <label htmlFor="roleID">Role:</label>
+          <div>
+            <select name="roleID" required>
+              <option value="1">Admin</option>
+              <option value="2">Manager</option>
+              <option value="3">Employee</option>
+            </select>
+          </div>
+          <label htmlFor="firstname">First Name:</label>
+          <div>
+            <input type="text" name="firstname" required />
+          </div>
+          <label htmlFor="surname">Surname:</label>
+          <div>
+            <input type="text" name="surname" required />
+          </div>
+          <label htmlFor="managerID">Manager:</label>
+          <div>
+            <select name="managerID">
+              {allManagersData.map((manager: User) => (
+                <option key={manager.userID} value={manager.userID}>
+                  {`${manager.firstname} ${manager.surname}`}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <Form method="post">
-        <label htmlFor="email">Email:</label>
-        <div>
-          <input type="email" name="email" required />
-        </div>
-        <label htmlFor="password1">Password:</label>
-        <div>
-          <input type="password" name="password1" required />
-        </div>
-        <label htmlFor="password2">Confirm Password:</label>
-        <div>
-          <input type="password" name="password2" required />
-        </div>
-        <label htmlFor="roleID">Role:</label>
-        <div className="select-wrapper">
-          <select name="roleID" required>
-            <option value="1">Admin</option>
-            <option value="2">Manager</option>
-            <option value="3">Employee</option>
-          </select>
-        </div>
-        <label htmlFor="firstname">First Name:</label>
-        <div>
-          <input type="text" name="firstname" required />
-        </div>
-        <label htmlFor="surname">Surname:</label>
-        <div>
-          <input type="text" name="surname" required />
-        </div>
-        <label htmlFor="managerID">Manager:</label>
-        <div className="select-wrapper">
-          <select name="managerID">
-            {allManagersData.map((manager: User) => (
-              <option key={manager.userID} value={manager.userID}>
-                {`${manager.firstname} ${manager.surname}`}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="select-wrapper">
           <button type="submit">Create User</button>
-        </div>
-      </Form>
+        </Form>
+      </div>
     </>
   );
 }

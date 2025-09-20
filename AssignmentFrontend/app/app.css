@@ -68,8 +68,7 @@ input[type="date"] {
 input[type="text"],
 input[type="email"],
 input[type="password"] {
-  width: 60%;
-  margin: 1rem;
+  width: 100%;
 }
 
 .select-wrapper {
@@ -121,6 +120,12 @@ select:focus-visible {
 
 .info-box button {
   margin: 1rem;
+}
+
+.large-form-container {
+  width: 60%;
+  margin: 1rem;
+  padding: 1rem;
 }
 
 /*Request Table Styles */

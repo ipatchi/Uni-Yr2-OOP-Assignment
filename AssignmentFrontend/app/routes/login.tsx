@@ -74,13 +74,12 @@ export default function Login() {
     <div className="card-container">
       <h2>Sign In</h2>
       <Form method="post">
+        <label htmlFor="email">Email:</label>
         <div>
-          <label htmlFor="email">Email:</label>
           <input type="email" id="email" name="email" required />
         </div>
-
+        <label htmlFor="password">Password:</label>
         <div>
-          <label htmlFor="password">Password:</label>
           <input type="password" id="password" name="password" required />
         </div>
 
