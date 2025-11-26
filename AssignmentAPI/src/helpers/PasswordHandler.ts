@@ -1,4 +1,4 @@
-import { scryptSync, randomBytes, timingSafeEqual } from 'crypto';
+import { scryptSync, randomBytes, timingSafeEqual } from "crypto";
 
 export class PasswordHandler {
   private static readonly SALT_LENGTH_IN_BYTES = 16;
@@ -6,12 +6,13 @@ export class PasswordHandler {
   private static readonly PEPPER = process.env.PEPPER;
 
   static hashPassword(password: string) {
-    const salt = randomBytes(this.SALT_LENGTH_IN_BYTES).toString('hex');
+    console.log("Hashing password:", password);
+    const salt = randomBytes(this.SALT_LENGTH_IN_BYTES).toString("hex");
     const hashedPassword = scryptSync(
       this.PEPPER + password,
       salt,
       this.KEY_LENGTH_IN_BYTES
-    ).toString('hex');
+    ).toString("hex");
     return { hashedPassword, salt };
   }
 
@@ -24,11 +25,11 @@ export class PasswordHandler {
       this.PEPPER + password,
       salt,
       this.KEY_LENGTH_IN_BYTES
-    ).toString('hex');
+    ).toString("hex");
 
     return timingSafeEqual(
-      Buffer.from(hashedPassword, 'hex'),
-      Buffer.from(hashToCompare, 'hex')
+      Buffer.from(hashedPassword, "hex"),
+      Buffer.from(hashToCompare, "hex")
     );
   }
 }

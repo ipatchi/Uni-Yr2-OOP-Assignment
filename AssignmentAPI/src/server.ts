@@ -12,6 +12,7 @@ import jwt from "jsonwebtoken";
 import { IAuthenticatedJWTRequest } from "./types/IAuthenticatedJWTRequest";
 import { ManagerRouter } from "./routes/ManagerRouter";
 import { LeaveRequestRouter } from "./routes/LeaveRequestRouter";
+import { seedDatabase } from "./helpers/DatabaseSeeder";
 import cors from "cors";
 
 export class Server {
@@ -165,6 +166,9 @@ export class Server {
     try {
       Logger.info(`Data Source Initialised`);
       await this.appDataSource.initialize();
+
+      Logger.info("Checking database seed status...");
+      await seedDatabase();
     } catch (error) {
       Logger.info("Error during initialisation:", error);
       throw error;
