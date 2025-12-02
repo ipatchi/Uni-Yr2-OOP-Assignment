@@ -2,7 +2,6 @@ import { AppDataSource } from "../data-source";
 import { Role } from "../entity/Role";
 import { User } from "../entity/User";
 import { RoleName } from "../types/RoleName";
-import { PasswordHandler } from "./PasswordHandler";
 
 export const seedDatabase = async () => {
   try {
