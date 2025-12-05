@@ -1,22 +1,24 @@
-FROM node:20-alpine AS development-dependencies-env
-COPY . /app
-WORKDIR /app
-RUN npm ci
-
-FROM node:20-alpine AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
-RUN npm ci --omit=dev
-
-FROM node:20-alpine AS build-env
-COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
-RUN npm run build
-
 FROM node:20-alpine
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
+# Set the working directory inside the container
 WORKDIR /app
-CMD ["npm", "run", "start"]
+
+# 1. Copy and install dependencies
+COPY package*.json ./
+RUN npm install
+
+# 2. Copy the necessary configuration files from your local project root
+#    (The ones next to the Dockerfile: package.json, tsconfig.json, etc.)
+COPY tsconfig.json ./
+COPY vite.config.ts ./
+# Add any other config files needed for the build (e.g., remix.config.js, .env.development)
+
+# 3. Copy the 'app' directory contents to the WORKDIR /app
+#    This makes the path to your file /app/root.tsx, fixing the error.
+COPY app ./app
+
+# 4. Build the application
+RUN npm run build 
+ENV API_URL=http://assignment-api:8900
+
+EXPOSE 3000
+CMD [ "npm", "start" ]

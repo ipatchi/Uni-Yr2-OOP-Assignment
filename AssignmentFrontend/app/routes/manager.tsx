@@ -31,7 +31,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect("/home");
   }
 
-  const employees = await fetch(`http://localhost:8900/api/managers`, {
+  const employees = await fetch(`${process.env.API_URL}/api/managers`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -71,7 +71,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const response = await fetch(
-      `http://localhost:8900/api/leave-requests/approve`,
+      `${process.env.API_URL}/api/leave-requests/approve`,
       {
         method: "PATCH",
         headers: {
@@ -105,7 +105,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const response = await fetch(
-      `http://localhost:8900/api/leave-requests/reject`,
+      `${process.env.API_URL}/api/leave-requests/reject`,
       {
         method: "PATCH",
         headers: {
@@ -146,7 +146,7 @@ export default function Manager() {
       setIsLoading(true);
       try {
         const reqsResponse = await fetch(
-          `http://localhost:8900/api/leave-requests/status/${selectedEmployeeID}`,
+          `${process.env.API_URL}/api/leave-requests/status/${selectedEmployeeID}`,
           {
             method: "GET",
             headers: {
@@ -169,7 +169,7 @@ export default function Manager() {
       setIsLoading(true);
       try {
         const reqsResponse = await fetch(
-          `http://localhost:8900/api/leave-requests/remaining/${selectedEmployeeID}`,
+          `${process.env.API_URL}/api/leave-requests/remaining/${selectedEmployeeID}`,
           {
             method: "GET",
             headers: {

@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  assignment-api:
+    build:
+      context: ./AssignmentAPI
+      dockerfile: Dockerfile
+    ports:
+      - "8900:8900"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./AssignmentAPI:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - app-network
+
+  assignment-frontend:
+    build:
+      context: ./AssignmentFrontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0 # Crucial for accessing the app from your host machine
+    depends_on:
+      - assignment-api
+    networks:
+      - app-network
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,15 @@
+FROM node:18-alpine
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+
+# 1. Build the TypeScript code (Creates a 'dist' or 'build' folder)
+RUN npm run build 
+
+EXPOSE 8900
+
+# 2. Run the COMPILED file, not the source file
+# Check your tsconfig.json 'outDir' to confirm if it is 'dist' or 'build'
+CMD ["node", "build/index.js"]

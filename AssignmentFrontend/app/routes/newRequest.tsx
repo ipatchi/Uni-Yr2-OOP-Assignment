@@ -49,7 +49,7 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect("/");
   }
 
-  const response = await fetch(`http://localhost:8900/api/leave-requests`, {
+  const response = await fetch(`${process.env.API_URL}/api/leave-requests`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -25,7 +25,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const response = await fetch("http://localhost:8900/api/login", {
+    const response = await fetch(`${process.env.API_URL}/api/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -40,12 +40,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const token = await response.text();
 
-    const user = await fetch(`http://localhost:8900/api/users/email/${email}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const user = await fetch(
+      `${process.env.API_URL}/api/users/email/${email}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (!user.ok) {
       const apiError = await user.json();
