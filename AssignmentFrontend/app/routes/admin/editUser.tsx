@@ -46,7 +46,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 
   const employee = await fetch(
-    `http://localhost:8900/api/users/${employeeID}`,
+    `${process.env.API_URL}/api/users/${employeeID}`,
     {
       method: "GET",
       headers: {
@@ -62,7 +62,7 @@ export async function loader({ request, params }: LoaderArgs) {
   const employeeData = (await employee.json()).data;
 
   const employeesManager = await fetch(
-    `http://localhost:8900/api/managers/${employeeID}`,
+    `${process.env.API_URL}/api/managers/${employeeID}`,
     {
       method: "GET",
       headers: {
@@ -79,7 +79,7 @@ export async function loader({ request, params }: LoaderArgs) {
     employeeManagerData = (await employeesManager.json()).data;
   }
 
-  const allManagers = await fetch(`http://localhost:8900/api/users`, {
+  const allManagers = await fetch(`${process.env.API_URL}/api/users`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -134,7 +134,7 @@ export async function action({ request }: Route.ActionArgs) {
   console.log("Leave balance to set:", Number(leaveBalance));
 
   try {
-    const response = await fetch("http://localhost:8900/api/users", {
+    const response = await fetch(`${process.env.API_URL}/api/users`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -153,7 +153,7 @@ export async function action({ request }: Route.ActionArgs) {
       const apiError = await response.json();
       return { error: "Error Updating User: " + apiError.error.message };
     }
-    const managerResponse = await fetch("http://localhost:8900/api/managers", {
+    const managerResponse = await fetch(`${process.env.API_URL}/api/managers`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,

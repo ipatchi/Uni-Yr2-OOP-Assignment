@@ -15,6 +15,24 @@ export const seedDatabase = async () => {
       await roleRepository.save(adminRole);
     }
 
+    let managerRole = await roleRepository.findOneBy({
+      name: RoleName.MANAGER,
+    });
+    if (!managerRole) {
+      managerRole = new Role();
+      managerRole.name = RoleName.MANAGER;
+      await roleRepository.save(managerRole);
+    }
+
+    let employeeRole = await roleRepository.findOneBy({
+      name: RoleName.EMPLOYEE,
+    });
+    if (!employeeRole) {
+      employeeRole = new Role();
+      employeeRole.name = RoleName.EMPLOYEE;
+      await roleRepository.save(employeeRole);
+    }
+
     const adminEmail = process.env.ADMIN_DEFAULT_EMAIL;
     const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD;
 
