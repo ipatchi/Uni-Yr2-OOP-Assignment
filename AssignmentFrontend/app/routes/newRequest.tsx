@@ -49,19 +49,22 @@ export async function action({ request }: Route.ActionArgs) {
     return redirect("/");
   }
 
-  const response = await fetch(`${process.env.API_URL}/api/leave-requests`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      userID,
-      startDate,
-      endDate,
-      reason,
-    }),
-  });
+  const response = await fetch(
+    `${process.env.VITE_API_URL}/api/leave-requests`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        userID,
+        startDate,
+        endDate,
+        reason,
+      }),
+    }
+  );
 
   if (!response.ok) {
     const apiErrors = await response.json();

@@ -38,7 +38,7 @@ export async function loader({ request, params }: LoaderArgs) {
     return redirect("/home");
   }
 
-  const allManagers = await fetch(`${process.env.API_URL}/api/users`, {
+  const allManagers = await fetch(`${process.env.VITE_API_URL}/api/users`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -93,7 +93,7 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/api/users`, {
+    const response = await fetch(`${process.env.VITE_API_URL}/api/users`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -115,17 +115,20 @@ export async function action({ request }: Route.ActionArgs) {
     const newUser = await response.json();
     const newUserID = newUser.data.userID;
 
-    const managerResponse = await fetch(`${process.env.API_URL}/api/managers`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userID: newUserID,
-        managerID: managerID,
-      }),
-    });
+    const managerResponse = await fetch(
+      `${process.env.VITE_API_URL}/api/managers`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userID: newUserID,
+          managerID: managerID,
+        }),
+      }
+    );
     if (!managerResponse.ok) {
       const apiError = await managerResponse.json();
       return { error: "Error Assigning Manager: " + apiError.error.message };

@@ -28,7 +28,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect("/");
   }
   const reqsResponse = await fetch(
-    `${process.env.API_URL}/api/leave-requests/status/${userID}`,
+    `${process.env.VITE_API_URL}/api/leave-requests/status/${userID}`,
     {
       method: "GET",
       headers: {
@@ -38,7 +38,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   );
   const requests = reqsResponse.ok ? (await reqsResponse.json()).data : [];
   const balanceResponse = await fetch(
-    `${process.env.API_URL}/api/leave-requests/remaining/${userID}`,
+    `${process.env.VITE_API_URL}/api/leave-requests/remaining/${userID}`,
     {
       method: "GET",
       headers: {
@@ -78,14 +78,20 @@ export async function action({ request }: Route.ActionArgs) {
     console.log(
       JSON.stringify({ leaveRequestID: leaveRequestID, userID: userID })
     );
-    const response = await fetch(`${process.env.API_URL}/api/leave-requests`, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ leaveRequestID: leaveRequestID, userID: userID }),
-    });
+    const response = await fetch(
+      `${process.env.VITE_API_URL}/api/leave-requests`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          leaveRequestID: leaveRequestID,
+          userID: userID,
+        }),
+      }
+    );
     if (!response.ok) {
       console.error("Failed to cancel leave request", await response.text());
       return null;

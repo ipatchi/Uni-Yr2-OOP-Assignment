@@ -25,7 +25,7 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 
   try {
-    const response = await fetch(`${process.env.API_URL}/api/login`, {
+    const response = await fetch(`${process.env.VITE_API_URL}/api/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -41,7 +41,7 @@ export async function action({ request }: ActionFunctionArgs) {
     const token = await response.text();
 
     const user = await fetch(
-      `${process.env.API_URL}/api/users/email/${email}`,
+      `${process.env.VITE_API_URL}/api/users/email/${email}`,
       {
         method: "GET",
         headers: {

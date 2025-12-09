@@ -6,7 +6,7 @@ import {
   IsNumber,
   IsString,
   MaxLength,
-} from 'class-validator';
+} from "class-validator";
 import {
   Entity,
   Column,
@@ -14,19 +14,18 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   BeforeInsert,
-} from 'typeorm';
+} from "typeorm";
 
-import { User } from './User';
+import { User } from "./User";
 
-@Entity({ name: 'leaverequest' })
+@Entity({ name: "leaverequest" })
 export class LeaveRequest {
   @PrimaryGeneratedColumn()
   leaveRequestID: number;
 
-  @Column({ unique: true })
   @ManyToOne(() => User, { nullable: false, eager: true })
-  @IsNotEmpty({ message: 'User is required' })
-  @JoinColumn({ name: 'userID' })
+  @IsNotEmpty({ message: "User is required" })
+  @JoinColumn({ name: "userID" })
   userID: User;
 
   @Column()
@@ -47,6 +46,6 @@ export class LeaveRequest {
 
   @Column()
   @IsString()
-  @MaxLength(128, { message: 'Reason cannot exceed 128 characters' })
+  @MaxLength(128, { message: "Reason cannot exceed 128 characters" })
   reason: string;
 }

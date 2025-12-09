@@ -28,12 +28,14 @@ type LoaderData = {
   userID: string;
   role: number;
   employeeData: any[];
+  url: string;
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   const userID = await getUserID(request);
   const role = await getUserRole(request);
+  const url = process.env.VITE_API_URL;
   if (!token || !userID || !role) {
     return redirect("/");
   }
@@ -41,7 +43,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     return redirect("/home");
   }
 
-  const employees = await fetch(`${process.env.API_URL}/api/users`, {
+  const employees = await fetch(`${process.env.VITE_API_URL}/api/users`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -55,7 +57,7 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const employeeData = (await employees.json()).data;
 
-  return { token, userID, role, employeeData };
+  return { token, userID, role, employeeData, url };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -76,7 +78,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const response = await fetch(
-      `${process.env.API_URL}/api/leave-requests/approve`,
+      `${process.env.VITE_API_URL}/api/leave-requests/approve`,
       {
         method: "PATCH",
         headers: {
@@ -108,7 +110,7 @@ export async function action({ request }: Route.ActionArgs) {
     }
 
     const response = await fetch(
-      `${process.env.API_URL}/api/leave-requests/reject`,
+      `${process.env.VITE_API_URL}/api/leave-requests/reject`,
       {
         method: "PATCH",
         headers: {
@@ -133,7 +135,8 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Admin() {
-  const { token, userID, role, employeeData } = useLoaderData<LoaderData>();
+  const { token, userID, role, employeeData, url } =
+    useLoaderData<LoaderData>();
 
   const [selectedEmployeeID, setSelectedEmployeeID] = useState("");
   const [selectedEmployeeData, setSelectedEmployeeData] = useState<User>();
@@ -156,7 +159,7 @@ export default function Admin() {
       setIsLoading(true);
       try {
         const reqsResponse = await fetch(
-          `${process.env.API_URL}/api/leave-requests/status/${selectedEmployeeID}`,
+          `${url}/api/leave-requests/status/${selectedEmployeeID}`,
           {
             method: "GET",
             headers: {
@@ -182,7 +185,7 @@ export default function Admin() {
       setIsLoading(true);
       try {
         const reqsResponse = await fetch(
-          `${process.env.API_URL}/api/users/${selectedEmployeeID}`,
+          `${url}/api/users/${selectedEmployeeID}`,
           {
             method: "GET",
             headers: {

@@ -18,7 +18,7 @@ COPY app ./app
 
 # 4. Build the application
 RUN npm run build 
-ENV API_URL=http://assignment-api:8900
+ENV VITE_API_URL=http://assignment-api:8900
 
 EXPOSE 3000
 CMD [ "npm", "start" ]

@@ -46,7 +46,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 
   const employee = await fetch(
-    `${process.env.API_URL}/api/users/${employeeID}`,
+    `${process.env.VITE_API_URL}/api/users/${employeeID}`,
     {
       method: "GET",
       headers: {
@@ -55,14 +55,14 @@ export async function loader({ request, params }: LoaderArgs) {
     }
   );
   if (!employee.ok) {
-    console.log("Failed to fetch employee data");
+    console.log("Failed to fetch employee data:", employee.statusText);
     return redirect("/admin");
   }
 
   const employeeData = (await employee.json()).data;
 
   const employeesManager = await fetch(
-    `${process.env.API_URL}/api/managers/${employeeID}`,
+    `${process.env.VITE_API_URL}/api/managers/${employeeID}`,
     {
       method: "GET",
       headers: {
@@ -73,13 +73,16 @@ export async function loader({ request, params }: LoaderArgs) {
 
   let employeeManagerData: Management | null = null;
   if (!employeesManager.ok) {
-    console.log("Failed to fetch employee's manager data");
+    console.log(
+      "Failed to fetch employee's manager data",
+      employeesManager.statusText
+    );
     employeeManagerData = null;
   } else {
     employeeManagerData = (await employeesManager.json()).data;
   }
 
-  const allManagers = await fetch(`${process.env.API_URL}/api/users`, {
+  const allManagers = await fetch(`${process.env.VITE_API_URL}/api/users`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -115,6 +118,16 @@ export async function action({ request }: Route.ActionArgs) {
   const roleID = formData.get("roleID");
   const managerID = formData.get("managerID");
   const leaveBalance = Number(formData.get("leaveBalance"));
+  console.log("Form Data Received:", {
+    employeeID,
+    email,
+
+    firstname,
+    surname,
+    roleID,
+    managerID,
+    leaveBalance,
+  });
 
   const token = await getToken(request);
   if (!token) {
@@ -134,7 +147,7 @@ export async function action({ request }: Route.ActionArgs) {
   console.log("Leave balance to set:", Number(leaveBalance));
 
   try {
-    const response = await fetch(`${process.env.API_URL}/api/users`, {
+    const response = await fetch(`${process.env.VITE_API_URL}/api/users`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -153,17 +166,20 @@ export async function action({ request }: Route.ActionArgs) {
       const apiError = await response.json();
       return { error: "Error Updating User: " + apiError.error.message };
     }
-    const managerResponse = await fetch(`${process.env.API_URL}/api/managers`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userID: employeeID,
-        managerID: managerID,
-      }),
-    });
+    const managerResponse = await fetch(
+      `${process.env.VITE_API_URL}/api/managers`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userID: employeeID,
+          managerID: managerID,
+        }),
+      }
+    );
     if (!managerResponse.ok) {
       const apiError = await managerResponse.json();
       return { error: "Error Updating Manager: " + apiError.error.message };
