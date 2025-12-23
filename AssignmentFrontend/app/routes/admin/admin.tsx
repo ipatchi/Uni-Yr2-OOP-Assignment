@@ -4,6 +4,7 @@ import {
   redirect,
   useActionData,
   useLoaderData,
+  useSubmit,
 } from "react-router";
 import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import { useEffect, useState } from "react";
@@ -28,14 +29,15 @@ type LoaderData = {
   userID: string;
   role: number;
   employeeData: any[];
-  url: string;
+  selectedEmployeeData?: User;
+  selectedEmployeeID?: number;
+  leaveRequests?: LeaveRequest[];
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   const userID = await getUserID(request);
   const role = await getUserRole(request);
-  const url = process.env.VITE_API_URL;
   if (!token || !userID || !role) {
     return redirect("/");
   }
@@ -57,7 +59,48 @@ export async function loader({ request }: Route.LoaderArgs) {
 
   const employeeData = (await employees.json()).data;
 
-  return { token, userID, role, employeeData, url };
+  const searchParams = new URL(request.url).searchParams;
+  const selectedEmployeeID = searchParams.get("employeeID");
+  let selectedEmployeeData = null;
+  let leaveRequests: LeaveRequest[] = [];
+  if (selectedEmployeeID) {
+    const reqsResponse = await fetch(
+      `${process.env.VITE_API_URL}/api/leave-requests/status/${selectedEmployeeID}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (reqsResponse.ok) {
+      leaveRequests = (await reqsResponse.json()).data;
+    }
+    const userResponse = await fetch(
+      `${process.env.VITE_API_URL}/api/users/${selectedEmployeeID}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (userResponse.ok) {
+      selectedEmployeeData = (await userResponse.json()).data;
+    }
+  }
+
+  return {
+    token,
+    userID,
+    role,
+    employeeData,
+    selectedEmployeeData,
+    selectedEmployeeID: selectedEmployeeID
+      ? Number(selectedEmployeeID)
+      : undefined,
+    leaveRequests,
+  };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -135,88 +178,23 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Admin() {
-  const { token, userID, role, employeeData, url } =
-    useLoaderData<LoaderData>();
+  const {
+    token,
+    userID,
+    role,
+    employeeData,
+    selectedEmployeeData,
+    selectedEmployeeID,
+    leaveRequests,
+  } = useLoaderData<LoaderData>();
 
-  const [selectedEmployeeID, setSelectedEmployeeID] = useState("");
-  const [selectedEmployeeData, setSelectedEmployeeData] = useState<User>();
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [leaveRemaining, setLeaveRemaining] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!selectedEmployeeID) {
-      setError("Please select an employee to view their requests.");
-    } else {
-      setError(null);
-    }
-    setLeaveRequests([]);
-    setLeaveRemaining(0);
-    setSelectedEmployeeData(undefined);
-
-    const fetchLeaveRequests = async () => {
-      setIsLoading(true);
-      try {
-        const reqsResponse = await fetch(
-          `${url}/api/leave-requests/status/${selectedEmployeeID}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!reqsResponse.ok) {
-          console.error("Failed to fetch leave requests");
-          setError("Failed to fetch leave requests");
-          return redirect("/home");
-        }
-        const requests = (await reqsResponse.json()).data;
-
-        setLeaveRequests(requests);
-      } catch (error) {
-        setError("Loading error: " + error);
-        return redirect("/home");
-      }
-    };
-    const fetchEmployeeData = async () => {
-      setIsLoading(true);
-      try {
-        const reqsResponse = await fetch(
-          `${url}/api/users/${selectedEmployeeID}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!reqsResponse.ok) {
-          console.error("Failed to fetch employee data");
-          setError("Failed to fetch employee data");
-          return redirect("/home");
-        }
-        const data = (await reqsResponse.json()).data;
-
-        setLeaveRemaining(data.annualLeaveBalance);
-        setSelectedEmployeeData(data);
-      } catch (error) {
-        console.log("Error fetching employee data:", error);
-        setError("Loading Error: " + error);
-        return redirect("/home");
-      }
-    };
-
-    fetchLeaveRequests();
-    fetchEmployeeData();
-    setIsLoading(false);
-  }, [selectedEmployeeID, token]);
+  const submit = useSubmit();
 
   const handleEmployeeChange = (newID: string) => {
-    setSelectedEmployeeID(newID);
+    submit({ employeeID: newID }, { method: "get", action: "/admin" });
   };
 
   const actionData = useActionData<typeof action>();
@@ -259,17 +237,20 @@ export default function Admin() {
               <button type="submit">Edit User</button>
             </Form>
           )}
-          <p>Leave Remaining: {leaveRemaining} days</p>
+          <p>
+            Leave Remaining:{" "}
+            {selectedEmployeeData?.annualLeaveBalance ?? "Unknown"} days
+          </p>
           <p>Role: {selectedEmployeeData?.roleID?.name || "Unknown"}</p>
         </div>
       )}
       <div>
         {isLoading && <p>Loading...</p>}
-
-        {!isLoading && leaveRequests.length === 0 && (
+        {!isLoading && !leaveRequests && <p>Could not load leave requests.</p>}
+        {!isLoading && leaveRequests?.length === 0 && (
           <p>User has no leave requests.</p>
         )}
-        {!isLoading && leaveRequests.length > 0 && (
+        {!isLoading && leaveRequests && leaveRequests.length > 0 && (
           <>
             <ul>
               <li className="request-header">
@@ -281,7 +262,7 @@ export default function Admin() {
               {leaveRequests.map((request) => (
                 <ManagerRequestRow
                   request={request}
-                  userID={selectedEmployeeID}
+                  userID={selectedEmployeeID || Number(userID)}
                 />
               ))}
             </ul>

@@ -1,10 +1,11 @@
-import { Form, redirect, useLoaderData } from "react-router";
+import { Form, redirect, useLoaderData, useSubmit } from "react-router";
 import type { Route } from "./+types/login";
 import { getToken, getUserID, getUserRole } from "~/sessions.server";
 import { useEffect, useState } from "react";
 import type { LeaveRequest } from "~/types/leaveRequest";
 import ManagerRequestRow from "~/components/managerRequestRow";
 import NavigationBar from "~/components/navigationBar";
+import type { User } from "~/types/user";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -18,14 +19,15 @@ type LoaderData = {
   userID: string;
   role: number;
   employeeData: any[];
-  url: string;
+  selectedEmployeeData?: User;
+  selectedEmployeeID?: number;
+  leaveRequests?: LeaveRequest[];
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
   const token = await getToken(request);
   const userID = await getUserID(request);
   const role = await getUserRole(request);
-  const url = process.env.VITE_API_URL;
   if (!token || !userID || !role) {
     return redirect("/");
   }
@@ -49,7 +51,48 @@ export async function loader({ request }: Route.LoaderArgs) {
     (employee: any) => employee.managerID.userID === userID
   );
 
-  return { token, userID, role, employeeData, url };
+  const searchParams = new URL(request.url).searchParams;
+  const selectedEmployeeID = searchParams.get("employeeID");
+  let selectedEmployeeData = null;
+  let leaveRequests: LeaveRequest[] = [];
+  if (selectedEmployeeID) {
+    const reqsResponse = await fetch(
+      `${process.env.VITE_API_URL}/api/leave-requests/status/${selectedEmployeeID}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (reqsResponse.ok) {
+      leaveRequests = (await reqsResponse.json()).data;
+    }
+    const userResponse = await fetch(
+      `${process.env.VITE_API_URL}/api/users/${selectedEmployeeID}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    if (userResponse.ok) {
+      selectedEmployeeData = (await userResponse.json()).data;
+    }
+  }
+
+  return {
+    token,
+    userID,
+    role,
+    employeeData,
+    selectedEmployeeData,
+    selectedEmployeeID: selectedEmployeeID
+      ? Number(selectedEmployeeID)
+      : undefined,
+    leaveRequests,
+  };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -131,75 +174,28 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function Manager() {
-  const { token, userID, role, employeeData, url } =
-    useLoaderData<LoaderData>();
-
-  const [selectedEmployeeID, setSelectedEmployeeID] = useState("");
-  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [leaveRemaining, setLeaveRemaining] = useState<number>(0);
+  const {
+    token,
+    userID,
+    role,
+    employeeData,
+    selectedEmployeeData,
+    selectedEmployeeID,
+    leaveRequests,
+  } = useLoaderData<LoaderData>();
   const [isLoading, setIsLoading] = useState(false);
+  const submit = useSubmit();
 
   useEffect(() => {
     if (!selectedEmployeeID) {
       return;
     }
-    console.log("Selected Employee ID:", selectedEmployeeID);
 
-    const fetchLeaveRequests = async () => {
-      setIsLoading(true);
-      try {
-        const reqsResponse = await fetch(
-          `${url}/api/leave-requests/status/${selectedEmployeeID}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (!reqsResponse.ok) {
-          console.error("Failed to fetch leave requests");
-        }
-        const requests = (await reqsResponse.json()).data;
-
-        setLeaveRequests(requests);
-      } catch (error) {
-        console.error("Loading error: " + error);
-      }
-    };
-    const fetchLeaveRemaining = async () => {
-      setIsLoading(true);
-      try {
-        const reqsResponse = await fetch(
-          `${url}/api/leave-requests/remaining/${selectedEmployeeID}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const balance = reqsResponse.ok
-          ? (await reqsResponse.json()).data.leaveBalance
-          : 0;
-        if (!reqsResponse.ok) {
-          console.error("Failed to fetch leave balance");
-        }
-        setLeaveRemaining(balance);
-      } catch (error) {
-        console.error("Loading error: " + error);
-      }
-    };
-
-    fetchLeaveRequests();
-    fetchLeaveRemaining();
     setIsLoading(false);
   }, [selectedEmployeeID, token]);
 
   const handleEmployeeChange = (newID: string) => {
-    setSelectedEmployeeID(newID);
+    submit({ employeeID: newID }, { method: "get", action: "/manager" });
   };
 
   return (
@@ -226,12 +222,18 @@ export default function Manager() {
 
       <div>
         {isLoading && <p>Loading...</p>}
-        <p>Leave Remaining: {leaveRemaining} days</p>
+        <p>
+          Leave Remaining:{" "}
+          {selectedEmployeeData
+            ? selectedEmployeeData.annualLeaveBalance
+            : "Unknown"}{" "}
+          days
+        </p>
         {!isLoading &&
           (!leaveRequests || (leaveRequests && leaveRequests.length === 0)) && (
             <p className="error">No leave requests found.</p>
           )}
-        {!isLoading && leaveRequests.length > 0 && (
+        {!isLoading && leaveRequests && leaveRequests.length > 0 && (
           <div>
             <ul>
               <li className="request-header">
@@ -243,7 +245,7 @@ export default function Manager() {
               {leaveRequests.map((request) => (
                 <ManagerRequestRow
                   request={request}
-                  userID={selectedEmployeeID}
+                  userID={Number(selectedEmployeeID)}
                 />
               ))}
             </ul>

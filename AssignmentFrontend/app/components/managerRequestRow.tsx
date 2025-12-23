@@ -6,7 +6,7 @@ export default function RequestRow({
   userID,
 }: {
   request: LeaveRequest;
-  userID: string;
+  userID: number;
 }) {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-GB");
