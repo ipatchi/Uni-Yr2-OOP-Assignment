@@ -1,3 +1,7 @@
+This app uses a database, this can be hosted locally using env variables for local development
+
+Deployment Strategy:
+
 1. Login to docker in aws using this command:
    aws ecr get-login-password --region us-east-1 --profile personal | docker login --username AWS --password-stdin <YOUR_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com
 
