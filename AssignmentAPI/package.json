@@ -35,6 +35,8 @@
     "start": "ts-node src/index.ts",
     "build": "tsc",
     "dev": "cross-env NODE_ENV=development nodemon src/index.ts",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch"
   }
 }
