@@ -9,6 +9,8 @@ env:
   AWS_REGION: us-east-1
   ECR_REPO_FRONTEND: frontend-repo
   ECR_REPO_BACKEND: backend-repo
+  ECS_CLUSTER: app-cluster
+  ECS_SERVICE: app-service
 
 jobs:
   build-and-push:
@@ -45,3 +47,7 @@ jobs:
           docker build -t $ECR_REPO_BACKEND ./AssignmentAPI
           docker tag $ECR_REPO_BACKEND:latest ${{ steps.login-ecr.outputs.registry }}/${ECR_REPO_BACKEND}:latest
           docker push ${{ steps.login-ecr.outputs.registry }}/${ECR_REPO_BACKEND}:latest
+
+      - name: Force ECS Update
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
