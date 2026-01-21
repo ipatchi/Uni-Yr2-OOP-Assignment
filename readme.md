@@ -15,3 +15,4 @@ Deployment Strategy:
 
 4. Push images:
    docker push <YOUR_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/frontend-repo:latest
+   docker push <YOUR_ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/backend-repo:latest
