@@ -1,24 +1,24 @@
-import { Request, Response } from 'express';
-import { AppDataSource } from '../data-source';
-import { Role } from '../entity/Role';
-import { Repository } from 'typeorm';
-import { StatusCodes } from 'http-status-codes';
-import { ResponseHandler } from '../helpers/ResponseHandler';
-import { validate } from 'class-validator';
+import { Request, Response } from "express";
+import { AppDataSource } from "../data-source";
+import { Role } from "../entity/Role";
+import { Repository } from "typeorm";
+import { StatusCodes } from "http-status-codes";
+import { ResponseHandler } from "../helpers/ResponseHandler";
+import { validate } from "class-validator";
 
 export class RoleController {
-  public static readonly ERROR_NO_ID_PROVIDED = 'No ID provided';
-  public static readonly ERROR_INVALID_ID_FORMAT = 'Invalid ID format';
-  public static readonly ERROR_ROLE_NOT_FOUND = 'Role not found';
+  public static readonly ERROR_NO_ID_PROVIDED = "No ID provided";
+  public static readonly ERROR_INVALID_ID_FORMAT = "Invalid ID format";
+  public static readonly ERROR_ROLE_NOT_FOUND = "Role not found";
   public static readonly ERROR_ROLE_NOT_FOUND_WITH_ID = (id: number) =>
     `Role not found with ID ${id}`;
-  public static readonly ERROR_NAME_IS_BLANK = 'Name is required';
+  public static readonly ERROR_NAME_IS_BLANK = "Name is required";
   public static readonly ERROR_FAILED_TO_RETRIEVE_ROLES =
-    'Failed to retrieve roles';
+    "Failed to retrieve roles";
   public static readonly ERROR_FAILED_TO_RETRIEVE_ROLE =
-    'Failed to retrieve role';
+    "Failed to retrieve role";
   public static readonly ERROR_ROLE_NOT_FOUND_FOR_DELETION =
-    'Role with provided ID not found';
+    "Role with provided ID not found";
 
   private roleRepository: Repository<Role>;
 
@@ -26,22 +26,6 @@ export class RoleController {
     this.roleRepository = AppDataSource.getRepository(Role);
   }
   // Get all users
-  public getAll = async (req: Request, res: Response): Promise<void> => {
-    try {
-      const roles = await this.roleRepository.find();
-      if (roles.length === 0) {
-        ResponseHandler.sendErrorResponse(res, StatusCodes.NO_CONTENT);
-        return;
-      }
-      ResponseHandler.sendSuccessResponse(res, roles);
-    } catch (error) {
-      ResponseHandler.sendErrorResponse(
-        res,
-        StatusCodes.INTERNAL_SERVER_ERROR,
-        RoleController.ERROR_FAILED_TO_RETRIEVE_ROLES
-      );
-    }
-  };
 
   // Get Role by ID
   public getById = async (req: Request, res: Response): Promise<void> => {
@@ -50,7 +34,7 @@ export class RoleController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        RoleController.ERROR_INVALID_ID_FORMAT
+        RoleController.ERROR_INVALID_ID_FORMAT,
       );
       return;
     }
@@ -62,7 +46,7 @@ export class RoleController {
         ResponseHandler.sendErrorResponse(
           res,
           StatusCodes.NOT_FOUND,
-          RoleController.ERROR_ROLE_NOT_FOUND_WITH_ID(roleID)
+          RoleController.ERROR_ROLE_NOT_FOUND_WITH_ID(roleID),
         );
         return;
       }
@@ -71,7 +55,7 @@ export class RoleController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.INTERNAL_SERVER_ERROR,
-        RoleController.ERROR_FAILED_TO_RETRIEVE_ROLE
+        RoleController.ERROR_FAILED_TO_RETRIEVE_ROLE,
       );
     }
   };
@@ -85,7 +69,7 @@ export class RoleController {
 
       if (errors.length > 0) {
         throw new Error(
-          errors.map((err) => Object.values(err.constraints || {})).join(', ')
+          errors.map((err) => Object.values(err.constraints || {})).join(", "),
         );
       }
 
@@ -95,7 +79,7 @@ export class RoleController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        error.message
+        error.message,
       );
     }
   };
@@ -112,12 +96,12 @@ export class RoleController {
         throw new Error(RoleController.ERROR_ROLE_NOT_FOUND_WITH_ID(roleID));
       }
 
-      ResponseHandler.sendSuccessResponse(res, 'Role Deleted');
+      ResponseHandler.sendSuccessResponse(res, "Role Deleted");
     } catch (error: any) {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.NOT_FOUND,
-        error.message
+        error.message,
       );
     }
   };
@@ -144,7 +128,7 @@ export class RoleController {
       ResponseHandler.sendErrorResponse(
         res,
         StatusCodes.BAD_REQUEST,
-        error.message
+        error.message,
       );
     }
   };
